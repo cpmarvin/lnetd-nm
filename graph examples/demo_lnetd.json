@@ -1,0 +1,258 @@
+{
+    "links": [
+        {
+            "capacity": 1000,
+            "local_ip": "10.5.10.10",
+            "metric": 10,
+            "remote_ip": "None",
+            "source": "gb-p10-lon",
+            "target": "gb-pe5-lon",
+            "util": 0
+        },
+        {
+            "capacity": 1000,
+            "local_ip": "10.8.10.10",
+            "metric": 10,
+            "remote_ip": "None",
+            "source": "gb-p10-lon",
+            "target": "gb-pe8-lon",
+            "util": 0
+        },
+        {
+            "capacity": 1000,
+            "local_ip": "10.7.10.10",
+            "metric": 10,
+            "remote_ip": "None",
+            "source": "gb-p10-lon",
+            "target": "fr-p7-mrs",
+            "util": 0
+        },
+        {
+            "capacity": 1000,
+            "local_ip": "10.5.10.5",
+            "metric": 10,
+            "remote_ip": "None",
+            "source": "gb-pe5-lon",
+            "target": "gb-p10-lon",
+            "util": 0
+        },
+        {
+            "capacity": 1000,
+            "local_ip": "10.5.8.5",
+            "metric": 10,
+            "remote_ip": "None",
+            "source": "gb-pe5-lon",
+            "target": "gb-pe8-lon",
+            "util": 0
+        },
+        {
+            "capacity": 1000,
+            "local_ip": "10.5.11.5",
+            "metric": 10,
+            "remote_ip": "None",
+            "source": "gb-pe5-lon",
+            "target": "gb-pe11-lon",
+            "util": 0
+        },
+        {
+            "capacity": 1000,
+            "local_ip": "10.5.8.8",
+            "metric": 10,
+            "remote_ip": "None",
+            "source": "gb-pe8-lon",
+            "target": "gb-pe5-lon",
+            "util": 0
+        },
+        {
+            "capacity": 1000,
+            "local_ip": "10.8.10.8",
+            "metric": 10,
+            "remote_ip": "None",
+            "source": "gb-pe8-lon",
+            "target": "gb-p10-lon",
+            "util": 0
+        },
+        {
+            "capacity": 1000,
+            "local_ip": "10.6.7.7",
+            "metric": 10,
+            "remote_ip": "None",
+            "source": "fr-p7-mrs",
+            "target": "ke-p6-nbi",
+            "util": 0
+        },
+        {
+            "capacity": 1000,
+            "local_ip": "10.7.10.7",
+            "metric": 5,
+            "remote_ip": "None",
+            "source": "fr-p7-mrs",
+            "target": "gb-p10-lon",
+            "util": 0
+        },
+        {
+            "capacity": 1000,
+            "local_ip": "10.5.11.11",
+            "metric": 10,
+            "remote_ip": "None",
+            "source": "gb-pe11-lon",
+            "target": "gb-pe5-lon",
+            "util": 0
+        },
+        {
+            "capacity": 1000,
+            "local_ip": "10.111.13.11",
+            "metric": 10,
+            "remote_ip": "None",
+            "source": "gb-pe11-lon",
+            "target": "nl-p13-ams",
+            "util": 0
+        },
+        {
+            "capacity": 1000,
+            "local_ip": "10.11.13.11",
+            "metric": 10,
+            "remote_ip": "None",
+            "source": "gb-pe11-lon",
+            "target": "nl-p13-ams",
+            "util": 0
+        },
+        {
+            "capacity": 1000,
+            "local_ip": "10.2.6.6",
+            "metric": 10,
+            "remote_ip": "None",
+            "source": "ke-p6-nbi",
+            "target": "ke-pe2-nbi",
+            "util": 0
+        },
+        {
+            "capacity": 1000,
+            "local_ip": "10.6.7.6",
+            "metric": 10,
+            "remote_ip": "None",
+            "source": "ke-p6-nbi",
+            "target": "fr-p7-mrs",
+            "util": 0
+        },
+        {
+            "capacity": 1000,
+            "local_ip": "10.2.3.2",
+            "metric": 5000,
+            "remote_ip": "None",
+            "source": "ke-pe2-nbi",
+            "target": "ke-pe3-nbi",
+            "util": 0
+        },
+        {
+            "capacity": 1000,
+            "local_ip": "10.22.33.22",
+            "metric": 5000,
+            "remote_ip": "None",
+            "source": "ke-pe2-nbi",
+            "target": "ke-pe3-nbi",
+            "util": 0
+        },
+        {
+            "capacity": 1000,
+            "local_ip": "10.2.6.2",
+            "metric": 10,
+            "remote_ip": "None",
+            "source": "ke-pe2-nbi",
+            "target": "ke-p6-nbi",
+            "util": 0
+        },
+        {
+            "capacity": 1000,
+            "local_ip": "10.22.33.22",
+            "metric": 10,
+            "remote_ip": "None",
+            "source": "ke-pe2-nbi",
+            "target": "ke-pe3-nbi",
+            "util": 0
+        },
+        {
+            "capacity": 1000,
+            "local_ip": "10.2.3.3",
+            "metric": 5000,
+            "remote_ip": "None",
+            "source": "ke-pe3-nbi",
+            "target": "ke-pe2-nbi",
+            "util": 0
+        },
+        {
+            "capacity": 1000,
+            "local_ip": "10.22.33.33",
+            "metric": 10,
+            "remote_ip": "None",
+            "source": "ke-pe3-nbi",
+            "target": "ke-pe2-nbi",
+            "util": 0
+        },
+        {
+            "capacity": 1000,
+            "local_ip": "10.111.13.13",
+            "metric": 10,
+            "remote_ip": "None",
+            "source": "nl-p13-ams",
+            "target": "gb-pe11-lon",
+            "util": 0
+        },
+        {
+            "capacity": 1000,
+            "local_ip": "10.11.13.13",
+            "metric": 10,
+            "remote_ip": "None",
+            "source": "nl-p13-ams",
+            "target": "gb-pe11-lon",
+            "util": 0
+        }
+    ],
+    "nodes": [
+        {
+            "name": "gb-p10-lon",
+            "x": 193.11683087028672,
+            "y": 12.423962081129957
+        },
+        {
+            "name": "gb-pe5-lon",
+            "x": 216.44557853373038,
+            "y": 187.47976150526983
+        },
+        {
+            "name": "gb-pe8-lon",
+            "x": 23.719170485624886,
+            "y": 135.89666950585422
+        },
+        {
+            "name": "fr-p7-mrs",
+            "x": 454.23277115160886,
+            "y": 11.979330094188526
+        },
+        {
+            "name": "gb-pe11-lon",
+            "x": 301.69865782253794,
+            "y": 291.689576857941
+        },
+        {
+            "name": "ke-p6-nbi",
+            "x": 693.3829781573444,
+            "y": 9.499336261630674
+        },
+        {
+            "name": "ke-pe2-nbi",
+            "x": 695.9475425473227,
+            "y": 136.42533074123548
+        },
+        {
+            "name": "ke-pe3-nbi",
+            "x": 870.4818222944556,
+            "y": 208.9339388107258
+        },
+        {
+            "name": "nl-p13-ams",
+            "x": 553.8800615465723,
+            "y": 292.58520135503204
+        }
+    ]
+}
