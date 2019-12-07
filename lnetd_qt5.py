@@ -10,7 +10,7 @@ import ast
 
 # PyQt5
 
-from PyQt5.QtCore import Qt, QSize, QTimer, QPointF, QRectF, QMetaObject, QRect ,QCoreApplication,QPoint
+from PyQt5.QtCore import Qt, QSize, QTimer, QPointF, QRectF, QMetaObject, QRect , QCoreApplication, QPoint, QLineF
 from PyQt5.QtGui import QPainter, QBrush, QPen, QFont, QIcon, QTransform
 from PyQt5.QtWidgets import (
     QApplication,
@@ -173,7 +173,12 @@ class TreeVisualizer(QWidget):
             textChanged=self.input_line_edit_changed,
             placeholderText = "Demand in Mbps"
         )
-        # run spf based on source and target if they are set
+
+        self.demand_unit_select = QComboBox(
+            sizeAdjustPolicy = QComboBox.AdjustToContents,
+            )
+        self.demand_unit_select.addItems(["Mbps", "Gbps", "Tbps"])
+        # run deploy demand based on source and target if they are set
         self.spf_button = QPushButton(
             text="Deploy Demand",
             clicked=self.run_spf,
@@ -196,12 +201,13 @@ class TreeVisualizer(QWidget):
         )
 
         # imports/exports the current graph
-        #self.import_graph_button = QPushButton(text="import", clicked=self.import_graph)
-        self.import_graph_button = QPushButton(text="Reload", clicked=self.import_graph_lnetd)
-        #load by default
-        self.import_graph_lnetd()
-
+        self.import_graph_button = QPushButton(text="Load Topology", clicked=self.import_graph_lnetd)
         self.export_graph_button = QPushButton(text="Export", clicked=self.export_graph)
+        # Load
+        self.import_netflow_button = QPushButton(text="Load Demands", clicked=self.load_netflow_demands)
+
+        #load by default
+        #self.import_graph_lnetd()
 
         # WIDGET LAYOUT
         self.main_v_layout = QVBoxLayout(self, margin=0)
@@ -230,35 +236,21 @@ class TreeVisualizer(QWidget):
         self.demand_h_layout.addWidget(self.additive_checkbox)
         #Demand Value
         self.demand_h_layout.addWidget(self.input_line_demand)
+        #Unit Select
+        self.demand_h_layout.addWidget(self.demand_unit_select)
         #slider
         self.demand_h_layout.addWidget(self.input_demand_slider)
 
-        '''
-        self.verticalLayoutWidget = QWidget()
-        #self.verticalLayoutWidget.setGeometry(QRect(610, 170, 160, 90))
-        self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
-        self.verticalLayout = QVBoxLayout(self.verticalLayoutWidget)
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout.setObjectName("verticalLayout")
-        #spacerItem = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Fixed)
-        self.DemandSlider = QSlider(self.verticalLayoutWidget)
-        self.DemandSlider.setMaximum(10000)
-        self.DemandSlider.setPageStep(100)
-        self.DemandSlider.setOrientation(Qt.Horizontal)
-        self.DemandSlider.setTickPosition(QSlider.TicksBelow)
-        self.DemandSlider.setTickInterval(100)
-        self.DemandSlider.setObjectName("DemandSlider")
-        self.verticalLayout.addWidget(self.DemandSlider)
-        self.option_h_layout.addWidget(self.verticalLayoutWidget)
-        '''
         self.io_h_layout = QHBoxLayout(self, margin=self.layout_margins)
+        #move this to file menu at some point
+
         self.io_h_layout.addWidget(self.import_graph_button)
+        self.io_h_layout.addWidget(self.import_netflow_button)
         self.io_h_layout.addSpacing(self.layout_item_spacing)
         self.io_h_layout.addWidget(self.export_graph_button)
         self.io_h_layout.addSpacing(self.layout_item_spacing)
         self.io_h_layout.addWidget(self.spf_button)
         self.io_h_layout.addWidget(self.about_button)
-
 
         self.main_v_layout.addLayout(self.option_h_layout)
         self.main_v_layout.addSpacing(-self.layout_margins)
@@ -282,9 +274,10 @@ class TreeVisualizer(QWidget):
         self.input_line_demand.setText(text)
 
     def set_weighted_graph(self):
+        pass
         """Is called when the weighted checkbox is pressed; sets, whether the graph is
         weighted or not."""
-        self.graph.set_weighted(self.weighted_checkbox.isChecked())
+        #self.graph.set_weighted(self.weighted_checkbox.isChecked())
 
     def adjust_canvas_translation(self, event):
         """Is called when the canvas widget is resized; changes translation so the
@@ -307,47 +300,9 @@ class TreeVisualizer(QWidget):
             -(distance - leash_length) / 10 if self.forces_checkbox.isChecked() else 0
         )
 
-    def import_graph_lnetd(self,lnetd_links=None):
-        if not lnetd_links:
-            lnetd_links = [
-{'source': 'gb-p10-lon', 'target': 'gb-pe5-lon', 'local_ip': '10.5.10.10', 'metric': '10', 'r_ip': '10.5.10.5', 'util': 0, 'capacity': 1000} ,
-{'source': 'gb-p10-lon', 'target': 'gb-pe8-lon', 'local_ip': '10.8.10.10', 'metric': '10', 'r_ip': '10.8.10.8', 'util': 0, 'capacity': 1000} ,
-{'source': 'gb-p10-lon', 'target': 'fr-p7-mrs', 'local_ip': '10.7.10.10', 'metric': '10', 'r_ip': '10.7.10.7', 'util': 0, 'capacity': 1000} ,
-{'source': 'gb-pe8-lon', 'target': 'gb-pe5-lon', 'local_ip': '10.5.8.8', 'metric': '10', 'r_ip': '10.5.8.5', 'util': 0, 'capacity': 1000} ,
-{'source': 'gb-pe8-lon', 'target': 'gb-p10-lon', 'local_ip': '10.8.10.8', 'metric': '10', 'r_ip': '10.8.10.10', 'util': 0, 'capacity': 1000} ,
-{'source': 'gb-pe5-lon', 'target': 'gb-p10-lon', 'local_ip': '10.5.10.5', 'metric': '10', 'r_ip': '10.5.10.10', 'util': 0, 'capacity': 1000} ,
-{'source': 'gb-pe5-lon', 'target': 'gb-pe8-lon', 'local_ip': '10.5.8.5', 'metric': '10', 'r_ip': '10.5.8.8', 'util': 0, 'capacity': 1000} ,
-{'source': 'gb-pe5-lon', 'target': 'gb-pe11-lon', 'local_ip': '10.5.11.5', 'metric': '10', 'r_ip': '10.5.11.11', 'util': 0, 'capacity': 1000} ,
-{'source': 'fr-p7-mrs', 'target': 'ke-p6-nbi', 'local_ip': '10.6.7.7', 'metric': '10', 'r_ip': '10.6.7.6', 'util': 0, 'capacity': 1000} ,
-{'source': 'fr-p7-mrs', 'target': 'gb-p10-lon', 'local_ip': '10.7.10.7', 'metric': '5', 'r_ip': '10.7.10.10', 'util': 0, 'capacity': 1000} ,
-{'source': 'ke-p6-nbi', 'target': 'ke-pe2-nbi', 'local_ip': '10.2.6.6', 'metric': '10', 'r_ip': '10.2.6.2', 'util': 0, 'capacity': 1000} ,
-{'source': 'ke-p6-nbi', 'target': 'fr-p7-mrs', 'local_ip': '10.6.7.6', 'metric': '10', 'r_ip': '10.6.7.7', 'util': 0, 'capacity': 1000} ,
-{'source': 'ke-pe3-nbi', 'target': 'ke-pe2-nbi', 'local_ip': '10.2.3.3', 'metric': '5000', 'r_ip': '10.2.3.2', 'util': 0, 'capacity': 1000} ,
-{'source': 'ke-pe3-nbi', 'target': 'ke-pe2-nbi', 'local_ip': '10.22.33.33', 'metric': '10', 'r_ip': '10.22.33.22', 'util': 0, 'capacity': 1000} ,
-{'source': 'ke-pe2-nbi', 'target': 'ke-pe3-nbi', 'local_ip': '10.2.3.2', 'metric': '5000', 'r_ip': '10.2.3.3', 'util': 0, 'capacity': 1000} ,
-{'source': 'ke-pe2-nbi', 'target': 'ke-pe3-nbi', 'local_ip': '10.22.33.22', 'metric': '5000', 'r_ip': '10.22.33.33', 'util': 0, 'capacity': 1000} ,
-{'source': 'ke-pe2-nbi', 'target': 'ke-p6-nbi', 'local_ip': '10.2.6.2', 'metric': '10', 'r_ip': '10.2.6.6', 'util': 0, 'capacity': 1000} ,
-{'source': 'ke-pe2-nbi', 'target': 'ke-pe3-nbi', 'local_ip': '10.22.33.22', 'metric': '10', 'r_ip': '10.22.33.33', 'util': 0, 'capacity': 1000} ,
-{'source': 'nl-p13-ams', 'target': 'gb-pe11-lon', 'local_ip': '10.111.13.13', 'metric': '10', 'r_ip': '10.111.13.11', 'util': 0, 'capacity': 1000} ,
-{'source': 'nl-p13-ams', 'target': 'gb-pe11-lon', 'local_ip': '10.11.13.13', 'metric': '10', 'r_ip': '10.11.13.11', 'util': 0, 'capacity': 1000} ,
-{'source': 'gb-pe11-lon', 'target': 'gb-pe5-lon', 'local_ip': '10.5.11.11', 'metric': '10', 'r_ip': '10.5.11.5', 'util': 0, 'capacity': 1000} ,
-{'source': 'gb-pe11-lon', 'target': 'nl-p13-ams', 'local_ip': '10.111.13.11', 'metric': '10', 'r_ip': '10.111.13.13', 'util': 0, 'capacity': 1000} ,
-{'source': 'gb-pe11-lon', 'target': 'nl-p13-ams', 'local_ip': '10.11.13.11', 'metric': '10', 'r_ip': '10.11.13.13', 'util': 0, 'capacity': 1000} ,
-]
-            lnetd_links1 = [
-{'source': 'gb-p10-lon', 'target': 'gb-pe5-lon', 'l_ip': '10.5.10.10', 'metric': '10', 'r_ip': '10.5.10.5', 'util': 0, 'capacity': 1000} ,
-{'source': 'gb-pe5-lon', 'target': 'gb-p10-lon', 'l_ip': '10.5.10.5', 'metric': '10', 'r_ip': '10.5.10.10', 'util': 0, 'capacity': 1000} ,
-
-]
-        '''
-        {'source': 'gb-p10-lon', 'target': 'gb-pe5-lon', 'l_ip': '10.5.10.10', 'metric': '10' , 'util': 8597},
-        {'source': 'gb-p10-lon', 'target': 'gb-pe8-lon', 'l_ip': '10.8.10.10', 'metric': '10', 'util': 8195}
-        ]
-        '''
-
+    def import_graph_lnetd(self):
         """Is called when the import button is clicked; imports a graph from a file."""
         path = QFileDialog.getOpenFileName()[0]
-        #path = "utilities.py"
 
         if path != "":
             try:
@@ -356,62 +311,34 @@ class TreeVisualizer(QWidget):
                     lnetd_graph = json.load(file)
                     #print(lnetd_graph)
                     data = generate_link_number(lnetd_graph['links'])
-                    data = generate_link_number(lnetd_links)
+                    #data = generate_link_number(lnetd_links)
                     host_data = lnetd_graph['nodes']
                     #print(host_data)
                     #generate_link_number
 
-                    # set the properties of the graph by its first vertex
-                    #sample = data[0].split(" ")
-
+                    # set the properties of the graph
                     directed = True
                     weighted = True
-                    '''
-                    (
-                        False
-                        if len(sample) == 2 or directed and len(sample) == 3
-                        else True
-                    )
-                    '''
+
                     graph = Graph(directed=directed, weighted=weighted)
 
                     node_dictionary = {}
 
                     # add each of the nodes of the vertex to the graph
                     for vertex in data:
-                        #print(vertex)
                         vertex_components = vertex
-
-                        # the formats are either 'A B' or 'A <something> B'
                         nodes = [
                             vertex_components['source'],
                             vertex_components['target'],
                             ]
 
-                        # if weights are present, the formats are:
-                        # - 'A B num' for undirected graphs
-                        # - 'A <something> B num (num)' for directed graphs
                         metric = int(vertex_components['metric'])
                         util = 0 #vertex_components['util']
                         l_ip = vertex_components['local_ip']
                         linknum = vertex_components['linknum']
-                        '''
-                        (
-                            None
-                            if not weighted
-                            else [
-                                vertex_components[2]
-                                if not directed
-                                else vertex_components[3],
-                                None
-                                if not directed or vertex_components[1] != "<>"
-                                else vertex_components[4],
-                            ]
-                        )
-                        '''
-
+                        capacity = vertex_components['capacity']
+                        print(vertex_components.get('remote_ip'))
                         for node in nodes:
-                            #print(node)
                             import_coordinates = False
                             if node not in node_dictionary:
                                 #TODO improve this , maybe a dict instead of list ?!
@@ -445,9 +372,10 @@ class TreeVisualizer(QWidget):
                             n2=n2,
                             metric = metric,
                             util = util,
-                            l_ip =l_ip,
+                            local_ip = vertex_components['local_ip'],
                             linknum= linknum,
-                            capacity=1000
+                            capacity= capacity,
+                            remote_ip = (vertex_components.get('remote_ip') if vertex_components.get('remote_ip') else 'None')
                         )
                 # if everything was successful, override the current graph
                 self.graph = graph
@@ -459,13 +387,10 @@ class TreeVisualizer(QWidget):
                     self, "Error!", "The weights of the graph are not numbers!"
                 )
             except Exception as e:
-                print('this is the error when importing the new graph',e)
                 QMessageBox.critical(
                     self,
                     "Error!",
-                    "An error occurred when importing the graph. Make sure that the "
-                    + "file is in the correct format and that it isn't currently being "
-                    + "used!",
+                    str(e),
                 )
 
             # make sure that the UI is in order
@@ -473,6 +398,35 @@ class TreeVisualizer(QWidget):
             self.deselect_vertex()
             self.set_checkbox_values()
 
+    def load_netflow_demands(self):
+        path = QFileDialog.getOpenFileName()[0]
+        #path = "../examples/netflow_demands.json"
+        print(path)
+        if path != "":
+            try:
+                if len(self.graph.nodes) == 0:
+                    raise Exception("Demands must be loaded after Network Topology")
+                with open(path, "r") as file:
+                    demands = json.load(file)
+                    print(demands)
+                    for demand in demands:
+                        source = demand['source']
+                        target = demand['target']
+                        demand_value = int(demand['demand'])
+                        self.graph.add_demand(source=source,target=target,demand=demand_value)
+            except UnicodeDecodeError:
+                QMessageBox.critical(self, "Error!", "Can't read binary files!")
+            except ValueError:
+                QMessageBox.critical(
+                        self, "Error!", "The demand file cannot be imported!"
+                    )
+            except Exception as e:
+                print('this is the error when importing netflow', e)
+                QMessageBox.critical(
+                        self,
+                        "Error!",
+                        str(e),
+                    )
 
     def update_graph_spf(self, source: Node, target: Node):
         pass
@@ -533,8 +487,13 @@ class TreeVisualizer(QWidget):
         source_label = self.input_line_source.text()
         target_label = self.input_line_target.text()
         demand_value = self.input_line_demand.text()
-        #print(demand_value)
-        #print(len(demand_value))
+        demand_unit_text = self.demand_unit_select.currentText()
+        if demand_unit_text =='Mbps':
+            demand_unit_multiplicate = 1
+        elif demand_unit_text =='Gbps':
+            demand_unit_multiplicate = 1000
+        elif demand_unit_text =='Tbps':
+            demand_unit_multiplicate = 1000000
 
 
         graph_nodes = self.graph.get_nodes_label()
@@ -559,17 +518,18 @@ class TreeVisualizer(QWidget):
             palette = self.input_line_target.palette()
             palette.setColor(self.input_line_target.backgroundRole(), Qt.white)
             self.input_line_target.setPalette(palette)
-            source = self.graph.get_node_based_on_label(source_label)
-            target = self.graph.get_node_based_on_label(target_label)
+            #source = self.graph.get_node_based_on_label(source_label)
+            #target = self.graph.get_node_based_on_label(target_label)
             #reset existing spf path
-            #if self.additive_checkbox
             if not self.additive_checkbox.isChecked():
                 #print(self.additive_checkbox.isChecked())
-                self.graph.reset_spf()
+                self.graph.remove_all_demands()
+                #self.graph.reset_spf(demand=True)
             #get new spf path
-            demand = int(demand_value)
+            demand = int(demand_value) * demand_unit_multiplicate
             #print(f'running deploy demand on source: {source} target:{target} with demand: {demand}')
-            self.graph.GetSpfPath(source=source,target=target,demand=demand)
+            self.graph.check_if_demand_exists_or_add(source_label,target_label,demand)
+            #self.graph.add_demand(source=source_label,target=target_label,demand=demand)
 
     #TODO change this  name to reflect
     def toggle_directed_graph(self):
@@ -586,7 +546,6 @@ class TreeVisualizer(QWidget):
         #self.Form.show()
 
         pass
-
 
     def update_directed_toggle_button_text(self):
         """Changes the text of the directed toggle button, according to whether the
@@ -616,7 +575,7 @@ class TreeVisualizer(QWidget):
             # try to parse the input text either as an integer, or as a float
             weight = None
             try:
-                #weight = int(text)
+                weight = int(text)
                 weight = text
             except ValueError:
                 try:
@@ -638,7 +597,6 @@ class TreeVisualizer(QWidget):
         """Sets the selected node to the specified node, sets the input line edit to
         its label and enables it."""
         self.selected_node = node
-
         self.input_line_edit.setText(node.get_label())
         self.input_line_edit.setEnabled(True)
         self.input_line_edit.setFocus()
@@ -657,18 +615,11 @@ class TreeVisualizer(QWidget):
         self.input_line_edit.setText(str(vertex[2]))
         self.input_line_edit.setEnabled(True)
         self.input_line_edit.setFocus()
-        #QMessageBox.information(self, "Link Info", str(self.selected_vertex[3].metric))
-        '''
-        self.dialog = QDialog()
-        self.dialog.ui = LinkInfoDialog()
-        self.dialog.ui.setupUi(self.dialog,vertex[3])
-        self.dialog.show()
-        '''
+        #bring up the link_info window
         self.link_info = QWidget()
         self.link_info.ui = Ui_link_info()
         self.link_info.ui.setupUi(self.link_info,vertex[3])
         self.link_info.show()
-
 
 
     def deselect_vertex(self):
@@ -730,14 +681,64 @@ class TreeVisualizer(QWidget):
                 self.deselect_vertex()
 
         elif event.button() == Qt.RightButton:
+            cmenu = QMenu(self)
+            if pressed_node is not None:
+                print('node is note node',type(pressed_node))
+                if pressed_node._failed:
+                    unfail_node = cmenu.addAction("Node UP")
+                else:
+                    fail_node = cmenu.addAction("Node DOWN")
+
+                node_information = cmenu.addAction("Node Info")
+                action = cmenu.exec_(self.mapToGlobal(event.pos()))
+                if action == node_information:
+                    print('node information')
+                    pass
+                elif not pressed_node._failed and action == fail_node:
+                    pressed_node.failNode()
+                    self.graph.redeploy_demands()
+                elif pressed_node._failed and action == unfail_node:
+                    pressed_node.unfailNode()
+                    self.graph.redeploy_demands()
+            elif pressed_vertex is not None:
+                print('node is note node',pressed_vertex)
+                if pressed_vertex[3]._failed:
+                    unfail_link = cmenu.addAction("Link UP")
+                else:
+                    fail_link = cmenu.addAction("Link DOWN")
+                link_information = cmenu.addAction("Link Info")
+                action = cmenu.exec_(self.mapToGlobal(event.pos()))
+                if action == link_information:
+                    #bring up the link_info window
+                    self.link_info = QWidget()
+                    self.link_info.ui = Ui_link_info()
+                    self.link_info.ui.setupUi(self.link_info,pressed_vertex[3])
+                    self.link_info.show()
+                elif not pressed_vertex[3]._failed and action == fail_link:
+                    pressed_vertex[3].failInterface()
+                    self.graph.redeploy_demands()
+                elif pressed_vertex[3]._failed and action == unfail_link:
+                    pressed_vertex[3].unfailInterface()
+                    self.graph.redeploy_demands()
+                #select_vertex
+            else:
+                pass
+            #cmenu = QMenu(self)
+            #newAct = cmenu.addAction("New")
+            #opnAct = cmenu.addAction("Open")
+            #quitAct = cmenu.addAction("Quit")
+
+
+            pass
+            #TODO , bring up a contextmenu with Link UP/DOWN , Node UP/DOWN
             #bring up the menu
+            '''
             self.dialog = QDialog()
             self.dialog.ui = Ui_MyDialog()
             self.dialog.ui.setupUi(self.dialog)
             self.dialog.show()
             #self.add_node = AddNode(pos)
             #self.add_node.show()
-            '''
             if pressed_node is not None:
                 if (
                     self.selected_node is not None
@@ -784,7 +785,6 @@ class TreeVisualizer(QWidget):
                 )
         else:
             mouse_coordinates = self.get_mouse_position(event)
-
             # only do something, if we're working on canvas
             if mouse_coordinates is None:
                 return
@@ -896,8 +896,8 @@ class TreeVisualizer(QWidget):
 
         # if the graph is weighted, reset the positions, since they will be re-drawn
         # later on
-        if self.graph.is_weighted():
-            self.vertex_positions = []
+        # No need , graph is always weighted // REMOVE if self.graph.is_weighted():
+        self.vertex_positions = []
 
         # draw vertices; has to be drawn before nodes, so they aren't drawn on top
         for n1 in self.graph.get_nodes():
@@ -908,26 +908,32 @@ class TreeVisualizer(QWidget):
                 util = entry.utilization()
                 label = entry.local_ip
                 linknum = entry.link_num
-                #print('this is util:',util)
-                if util == 0:
+                #TODO move this external and link it with Util Legend
+                if entry._failed:
+                    link_color = Qt.red
+                elif util == 0:
                     link_color = Qt.gray
-                elif 0 < util <= 10:
+                elif 0 < util < 10:
                     link_color = Qt.blue
-                elif 11 <= util <= 30:
+                elif 10 <= util < 30:
                     link_color = Qt.green
-                elif 31 <= util <= 99:
+                elif 30 <= util < 75:
+                    link_color = Qt.cyan
+                elif 75 <= util < 100:
                     link_color = Qt.yellow
                 elif util >= 100:
                     link_color = Qt.magenta
                 else:
                     link_color = Qt.gray
-        #for n2, weight in n1.get_neighbours().items():
+                '''
+                if entry.local_ip == '10.111.13.11':
+                    print(util,link_color)
+                '''
                 import math
                 n1_p = Vector(*n1.get_position())
                 n2_p = Vector(*n2.get_position())
-                # implement js algorithm
-                #import ipdb; ipdb.set_trace()
 
+                #TODO , this is from JS algrorithm , clean up and move external
                 if linknum % 2 ==0:
                     targetDistance = linknum * 3
                 else:
@@ -950,8 +956,7 @@ class TreeVisualizer(QWidget):
                 len1 = dr - ((dr/2) * math.sqrt(3))
                 endX = endX + (  len1/dr)
                 endY = endY + (  len1/dr)
-                #end
-                #import ipdb; ipdb.set_trace()
+
                 #set the new coordinates for line start and end points taking into accound the offset for each
                 n1_p = Vector(d0x,d0y)
                 n2_p = Vector(endX,endY)
@@ -1026,12 +1031,10 @@ class TreeVisualizer(QWidget):
 
                     #<309.40683844801885, 188.3109590533766>
                     #color link based on util
-                    if entry._on_spf:
-                        painter.setPen(QPen(Qt.black, Qt.SolidLine))
-                    else:
-                        painter.setPen(QPen(link_color, Qt.SolidLine))
+                    painter.setPen(QPen(link_color, Qt.SolidLine))
 
                     painter.drawLine(QPointF(d0x,d0y),QPointF(endX,endY))
+                    link_paint = QLineF(QPointF(d0x,d0y), QPointF(endX,endY))
 
 
 
@@ -1107,6 +1110,18 @@ class TreeVisualizer(QWidget):
                         painter.translate(xc, yc);
                         painter.rotate(45);
                         painter.translate(-xc, -yc);
+                        painter.restore()
+
+                        painter.save()
+                        contents = 1 #weight_rectangle.contentsRect()
+                        mid_x = (mid - weight_v)[0]
+                        mid_y = (mid - weight_v)[1]
+                        #link_paint = QLineF(contents.topLeft(), contents.bottomRight())
+
+                        #painter.translate(mid_x,mid_y)
+                        painter.rotate(-link_paint.angle())
+                        #painter.translate(-contents.center())
+                        painter.drawRect(weight_rectangle)
                         painter.restore()
                         '''
                         painter.drawRect(weight_rectangle)

@@ -1,4 +1,4 @@
 # lnetd_qt
 PyQT implementation for LnetD
 
-![LnetD](/lnetd_qt.png)
+![LnetD](/images/lnetd_qt.png)

@@ -2,16 +2,43 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Set, List
 import networkx as nx
+
+class Demand:
+    """A class for demand"""
+
+    def __init__(self,source:Node,target:Node,demand:float):
+        self.source = source
+        self.target = target
+        self.demand = demand
+
+class Circuit:
+    "A class for L1 circuit"
+    def __init__(self, label : str , target: L1Node, linknum: int = 1):
+        self.label = label
+        self.target = target
+        self.linknum = linknum
+        self.interfaces = []
+        self._failed = False
+
+    def __repr__(self):
+        return self.label
+
+    def _fail(self):
+        for interface in self.interfaces:
+            interface.failInterface()
+        self._failed = True
+
+
 class Interface:
     """A class for interface model"""
 
-    def __init__(self, target: Node , metric: int , local_ip: str , util : float, capacity: int , r_ip: str = None,linknum: int = 1):
+    def __init__(self, target: Node , metric: int , local_ip: str , util : float, capacity: int , remote_ip: str = None,linknum: int = 1):
         self.target = target
         self.metric = metric
         self.util = 0 #util
         self.capacity = capacity
         self.local_ip = local_ip
-        self.remote_ip = r_ip
+        self.remote_ip = remote_ip
         self._failed = False
         self._on_spf = False
         self.link_num = linknum
@@ -26,6 +53,42 @@ class Interface:
         """Returns utilization percent = (self.traffic/self.capacity)*100 """
         return (self.util / self.capacity)*100
 
+    def get_label(self):
+        return str(self.local_ip)
+
+    def failInterface(self):
+        """TODO fail the other end of the interafce ? """
+        self._failed = True
+        self.util = 0
+        for interface in self.target.interfaces:
+            if interface.remote_ip == self.local_ip:
+                interface._failed = True
+                interface.util = 0
+
+    def unfailInterface(self):
+        """TODO fail the other end of the interafce ? """
+        self._failed = False
+        self.util = 0
+        for interface in self.target.interfaces:
+            if interface.remote_ip == self.local_ip:
+                interface._failed = False
+                interface.util = 0
+class L1Node():
+    "A class to hold L1Node"
+
+    def __init__(self, position: Vector, radius: float, label: str = None):
+        #super(self.Node).__init__()
+        self.circuits = []
+        self._failed = False
+
+    def get_circuits(self):
+        return self.circuits
+
+    def failNode(self):
+        for circuit in self.circuits:
+            circuit.failCircuit()
+        self._failed = True
+
 class Node:
     """A class for working with of nodes in a graph."""
 
@@ -37,6 +100,7 @@ class Node:
         #self.neighbours: Dict[Node, float] = {}
         self.interfaces: List[Interface] = []
         self.forces: List[Vector] = []
+        self._failed = False
 
     def __repr__(self) -> str:
         return self.label
@@ -115,8 +179,15 @@ class Node:
                     "remote_ip":link.remote_ip})
         return exported_links
 
+    def failNode(self):
+        self._failed = True
+        for interface in self.interfaces:
+            interface.failInterface()
 
-
+    def unfailNode(self):
+        self._failed = False
+        for interface in self.interfaces:
+            interface.unfailInterface()
 class Graph:
     """A class for working with graphs."""
 
@@ -126,12 +197,14 @@ class Graph:
 
         self.nodes: List[Node] = []
         self.components: Set[Node] = []
+        self.demands: List[Demand] = []
 
-    def reset_spf(self):
+    def reset_spf1(self,demand=False):
         for node in self.nodes:
             for interface in node.interfaces:
                 interface._on_spf = False
-                interface.util = 0
+                if demand:
+                    interface.util = 0
 
     def calculate_components(self):
         """Calculate the components of the graph.
@@ -255,8 +328,47 @@ class Graph:
         self.nodes.append(node)
 
         #self.calculate_components()
-
         return node
+
+    def add_demand(self,source:str,target:str,demand:float):
+        print(source,target)
+        source_node = self.get_node_based_on_label(source)
+        target_node = self.get_node_based_on_label(target)
+        print(source_node,target_node)
+        if source_node not in self.nodes or target_node not in self.nodes:
+            raise Exception(f'{source} or {target} not in the Graph')
+        demand_object = Demand(source_node,target_node,demand)
+        self.demands.append(demand_object)
+        print('this are the demands',self.demands)
+        self.deploy_demands()
+        #self.reset_spf(demand=True)
+
+    def check_if_demand_exists_or_add(self,source_label:str,target_label:str,demand:float):
+        source_node = self.get_node_based_on_label(source_label)
+        target_node = self.get_node_based_on_label(target_label)
+        damand_exists = False
+        for existing_demand in self.demands:
+            if source_node == existing_demand.source and target_node == existing_demand.target:
+                existing_demand.demand += demand
+                damand_exists = True
+                self.redeploy_demands()
+        if not damand_exists:
+            self.add_demand(source=source_label,target=target_label,demand=demand)
+
+
+    def remove_all_demands(self):
+        self.demands = []
+        for node in self.nodes:
+            for interface in node.interfaces:
+                interface._on_spf = False
+                interface.util = 0
+
+    def redeploy_demands(self):
+        for node in self.nodes:
+            for interface in node.interfaces:
+                interface._on_spf = False
+                interface.util = 0
+        self.deploy_demands()
 
     def remove_node(self, node_to_be_removed: Node):
         """Deletes a node and all of the vertices that point to it from the graph."""
@@ -270,13 +382,13 @@ class Graph:
 
         self.calculate_components()
 
-    def add_vertex(self, n1: Node, n2: Node, metric: float = 0, util: float = 0, l_ip: str = 'None', linknum: int = 0, spf: str = '0', capacity: int = 0 , r_ip: str = 'None'):
+    def add_vertex(self, n1: Node, n2: Node, metric: float = 0, util: float = 0, local_ip: str = 'None', linknum: int = 0, spf: str = '0', capacity: int = 0 , remote_ip: str = 'Node'):
         """Adds a vertex from node n1 to node n2 (and vice versa, if it's not directed).
         Only does so if the given vertex doesn't already exist."""
         # from n1 to n2
         #n1.neighbours.append({n2:weight})
         #(self, target: Node , metric: int , local_ip: str , util : float, capacity: int , r_ip: str = None):
-        interface = Interface(target=n2,metric=metric,util=util,local_ip=l_ip,capacity=capacity,r_ip=r_ip,linknum=linknum)
+        interface = Interface(target=n2,metric=metric,util=util,local_ip=local_ip,capacity=capacity,remote_ip=remote_ip,linknum=linknum)
         n1.interfaces.append(interface)
 
 
@@ -313,12 +425,12 @@ class Graph:
         node_list = self.get_nodes()
         for node in node_list:
             for interface in node.interfaces:
-                G.add_edge(node,interface.target,**interface._networkX(),data=interface)
+                if not interface._failed:
+                    G.add_edge(node,interface.target,**interface._networkX(),data=interface)
 
         paths = list(nx.all_shortest_paths(G, source, target, weight='metric'))
-        if demand:
-            num_ecmp_paths = len(paths)
-            demand_path = demand / num_ecmp_paths
+        num_ecmp_paths = len(paths)
+        demand_path = demand / num_ecmp_paths
         for p in paths:
             u=p[0]
             for v in p[1:]:
@@ -327,13 +439,17 @@ class Graph:
                 ecmp_links = [k for k, d in G[u][v].items() if d['metric'] == min_weight]
                 num_ecmp_links = len(ecmp_links)
                 for d in ecmp_links:
-                    if demand:
-                        G[u][v][d]['data'].util += int(demand_path)/int(num_ecmp_links)
-                    else:
-                        G[u][v][d]['data']._on_spf = True
-                '''
-                for d in values_u_v:
-                    if d['metric'] == min_weight:
-                        d['data']._on_spf = True
-                '''
+                    G[u][v][d]['data'].util += int(demand_path)/int(num_ecmp_links)
+                    G[u][v][d]['data']._on_spf = True
                 u=v
+    def get_interface_by_ip(self,label):
+        for node in self.nodes:
+            for interface in node.interfaces:
+                if interface.local_ip == label:
+                    return interface
+    def get_demands(self):
+        return self.demands
+
+    def deploy_demands(self):
+        for demand in self.demands:
+            self.GetSpfPath(demand.source,demand.target,demand.demand)
