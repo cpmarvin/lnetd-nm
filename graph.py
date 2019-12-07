@@ -331,15 +331,12 @@ class Graph:
         return node
 
     def add_demand(self,source:str,target:str,demand:float):
-        print(source,target)
         source_node = self.get_node_based_on_label(source)
         target_node = self.get_node_based_on_label(target)
-        print(source_node,target_node)
         if source_node not in self.nodes or target_node not in self.nodes:
             raise Exception(f'{source} or {target} not in the Graph')
         demand_object = Demand(source_node,target_node,demand)
         self.demands.append(demand_object)
-        print('this are the demands',self.demands)
         self.deploy_demands()
         #self.reset_spf(demand=True)
 
@@ -453,3 +450,16 @@ class Graph:
     def deploy_demands(self):
         for demand in self.demands:
             self.GetSpfPath(demand.source,demand.target,demand.demand)
+
+    def get_number_of_links(self):
+        nr_of_links = 0
+        for node in self.nodes:
+            nr_of_links += len(node.interfaces)
+        return nr_of_links
+
+    def get_all_interface(self):
+        interface_list = []
+        for node in self.nodes:
+            interface_list += node.interfaces
+        return interface_list
+

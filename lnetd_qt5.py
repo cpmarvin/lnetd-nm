@@ -42,6 +42,7 @@ from utilities import *
 #from add_link import Ui_Form
 
 from dialogs.ui_link_info import Ui_link_info
+from dialogs.network_info import Ui_NetworkInfoForm
 '''
 class AddNode(QWidget):
     def __init__(self,position):
@@ -533,6 +534,11 @@ class TreeVisualizer(QWidget):
 
     #TODO change this  name to reflect
     def toggle_directed_graph(self):
+        '''
+        self.network_info = QWidget()
+        self.network_info.ui = Ui_NetworkInfoForm()
+        self.network_info.setupUi(self.network_info)
+        '''
         """Is called when the directed checkbox changes; toggles between directed and
         undirected graphs."""
         '''
@@ -540,10 +546,10 @@ class TreeVisualizer(QWidget):
         self.update_directed_toggle_button_text()
         '''
         #test new window open , this will be the Graph Info
-        #self.Form = QWidget()
-        #self.ui = Ui_Form()
-        #self.ui.setupUi(self.Form)
-        #self.Form.show()
+        self.network_info = QWidget()
+        self.ui = Ui_NetworkInfoForm()
+        self.ui.setupUi(self.network_info,self.graph)
+        self.network_info.show()
 
         pass
 

@@ -80,12 +80,33 @@ def load_graph(lnetd_links):
             n2=n2,
             metric = metric,
             util = util,
-            l_ip =l_ip,
+            local_ip =l_ip,
             linknum= linknum,
             capacity= capacity
         )
     return  graph
 
 graph = load_graph(lnetd_links)
+
+
+graph.check_if_demand_exists_or_add('nl-p13-ams','ke-pe2-nbi',500)
+#print('start',graph.demands)
+graph.check_if_demand_exists_or_add('ke-pe2-nbi','nl-p13-ams',100)
+#print('start',graph.demands)
+
+print('start',graph.demands)
+def load_demands(graph):
+    for row_number , row_data in enumerate(graph.get_all_interface()):
+        #print(row_number,row_data)
+        #print(enumerate(vars(row_data).items()))
+        print(row_data.__dict__.keys())
+        #DemandTable.insertRow(row_number)
+        for column_number, data in enumerate( row_data.__dict__.values() ):
+            #print(column_number,data)
+            pass
+            #print(column_number, data)
+load_demands(graph)
+
+#print(graph.get_all_interface())
 
 
