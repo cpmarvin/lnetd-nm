@@ -1096,29 +1096,40 @@ class TreeVisualizer(QWidget):
                         weight_rectangle = QRectF(*(mid - weight_v), *(2 * weight_v))
 
                         #the text is still upside down but rotation is fine now
-                        is_fixed = False
+                        is_fixed = True
 
                         if is_fixed :
                             painter.save()
-                            center_of_rec_x = weight_rectangle.center().x()
-                            center_of_rec_y  = weight_rectangle.center().y()
-
-                            painter.translate(center_of_rec_x, center_of_rec_y);
-                            painter.rotate(- link_paint.angle());
-
-                            rx = -(weight_v[0] * 0.5);
-                            ry = -(weight_v[1] );
-
-                            #fix text
                             if endX - d0x > 0:
-                                pass
+                                link_paint = QLineF(QPointF(d0x,d0y), QPointF(endX,endY))
+                            else:
+                                link_paint = QLineF(QPointF(endX,endY), QPointF(d0x,d0y))
 
+                            center_of_rec_x = weight_rectangle.center().x()
+                            #center_of_rec_x = link_paint.center().x()
+                            center_of_rec_y  = weight_rectangle.center().y()
+                            #center_of_rec_y = link_paint.center().y()
+
+                            painter.translate(center_of_rec_x, center_of_rec_y)
+
+
+                            rx = -(weight_v[0] * 0.5)
+                            ry = -(weight_v[1] )
+
+
+                            painter.rotate(- link_paint.angle());
                             new_rec = QRect(rx , ry, weight_v[0], 2 * weight_v[1])
-                            painter.drawRect(QRect(rx , ry, weight_v[0] , 2 * weight_v[1] ));
+                            painter.drawRect(QRect(rx , ry, weight_v[0] , 2 * weight_v[1] ))
                             painter.setFont(QFont(self.font_family, self.font_size / 3))
+                            #painter.resetTransform()
+                            #painter.restore()
                             painter.setPen(QPen(Qt.white, Qt.SolidLine))
+                            #print(new_rec.center().x())
+                            #print(dir(painter))
                             painter.drawText(new_rec, Qt.AlignCenter, str(weight))
+                            #painter.drawText(ry,rx,str(weight))
                             painter.restore()
+                            painter.setPen(QPen(Qt.black, Qt.SolidLine))
                             painter.setFont(QFont(self.font_family, self.font_size / 3))
                         else:
                             painter.drawRect(weight_rectangle)
