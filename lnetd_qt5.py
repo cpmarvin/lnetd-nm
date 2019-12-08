@@ -1094,35 +1094,38 @@ class TreeVisualizer(QWidget):
                         #Vector(lenght,height)
                         weight_v = Vector(w_len,2)
                         weight_rectangle = QRectF(*(mid - weight_v), *(2 * weight_v))
-                        #TODO fix translation for rect
-                        '''
-                        painter.save()
-                        painter.translate(xc, yc);
-                        painter.rotate(45);
-                        painter.translate(-xc, -yc);
-                        painter.restore()
 
-                        painter.save()
-                        contents = 1 #weight_rectangle.contentsRect()
-                        mid_x = (mid - weight_v)[0]
-                        mid_y = (mid - weight_v)[1]
-                        #link_paint = QLineF(contents.topLeft(), contents.bottomRight())
+                        #the text is still upside down but rotation is fine now
+                        is_fixed = False
 
-                        #painter.translate(mid_x,mid_y)
-                        painter.rotate(-link_paint.angle())
-                        #painter.translate(-contents.center())
-                        painter.drawRect(weight_rectangle)
-                        painter.restore()
-                        '''
-                        painter.drawRect(weight_rectangle)
-                        painter.setFont(QFont(self.font_family, self.font_size / 3))
+                        if is_fixed :
+                            painter.save()
+                            center_of_rec_x = weight_rectangle.center().x()
+                            center_of_rec_y  = weight_rectangle.center().y()
 
-                        # draw the value of the vertex (in white, so it's visible
-                        # against the background)
-                        painter.setPen(QPen(Qt.white, Qt.SolidLine))
-                        painter.drawText(weight_rectangle, Qt.AlignCenter, str(weight))
-                        painter.setPen(QPen(Qt.black, Qt.SolidLine))
+                            painter.translate(center_of_rec_x, center_of_rec_y);
+                            painter.rotate(- link_paint.angle());
 
+                            rx = -(weight_v[0] * 0.5);
+                            ry = -(weight_v[1] );
+
+                            #fix text
+                            if endX - d0x > 0:
+                                pass
+
+                            new_rec = QRect(rx , ry, weight_v[0], 2 * weight_v[1])
+                            painter.drawRect(QRect(rx , ry, weight_v[0] , 2 * weight_v[1] ));
+                            painter.setFont(QFont(self.font_family, self.font_size / 3))
+                            painter.setPen(QPen(Qt.white, Qt.SolidLine))
+                            painter.drawText(new_rec, Qt.AlignCenter, str(weight))
+                            painter.restore()
+                            painter.setFont(QFont(self.font_family, self.font_size / 3))
+                        else:
+                            painter.drawRect(weight_rectangle)
+                            painter.setFont(QFont(self.font_family, self.font_size / 3))
+                            painter.setPen(QPen(Qt.white, Qt.SolidLine))
+                            painter.drawText(weight_rectangle, Qt.AlignCenter, str(weight))
+                            painter.setPen(QPen(Qt.black, Qt.SolidLine))
 
         # draw nodes
         for node in self.graph.get_nodes():
