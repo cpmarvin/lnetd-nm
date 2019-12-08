@@ -43,6 +43,8 @@ from utilities import *
 
 from dialogs.ui_link_info import Ui_link_info
 from dialogs.network_info import Ui_NetworkInfoForm
+from dialogs.edit_label import Ui_EditLabel
+
 '''
 class AddNode(QWidget):
     def __init__(self,position):
@@ -402,14 +404,14 @@ class TreeVisualizer(QWidget):
     def load_netflow_demands(self):
         path = QFileDialog.getOpenFileName()[0]
         #path = "../examples/netflow_demands.json"
-        print(path)
+        #print(path)
         if path != "":
             try:
                 if len(self.graph.nodes) == 0:
                     raise Exception("Demands must be loaded after Network Topology")
                 with open(path, "r") as file:
                     demands = json.load(file)
-                    print(demands)
+                    #print(demands)
                     for demand in demands:
                         source = demand['source']
                         target = demand['target']
@@ -689,7 +691,7 @@ class TreeVisualizer(QWidget):
         elif event.button() == Qt.RightButton:
             cmenu = QMenu(self)
             if pressed_node is not None:
-                print('node is note node',type(pressed_node))
+                #print('node is note node',type(pressed_node))
                 if pressed_node._failed:
                     unfail_node = cmenu.addAction("Node UP")
                 else:
@@ -707,12 +709,13 @@ class TreeVisualizer(QWidget):
                     pressed_node.unfailNode()
                     self.graph.redeploy_demands()
             elif pressed_vertex is not None:
-                print('node is note node',pressed_vertex)
+                #print('node is note node',pressed_vertex)
                 if pressed_vertex[3]._failed:
                     unfail_link = cmenu.addAction("Link UP")
                 else:
                     fail_link = cmenu.addAction("Link DOWN")
                 link_information = cmenu.addAction("Link Info")
+                change_metric = cmenu.addAction("Change Link Metric")
                 action = cmenu.exec_(self.mapToGlobal(event.pos()))
                 if action == link_information:
                     #bring up the link_info window
@@ -720,6 +723,11 @@ class TreeVisualizer(QWidget):
                     self.link_info.ui = Ui_link_info()
                     self.link_info.ui.setupUi(self.link_info,pressed_vertex[3])
                     self.link_info.show()
+                elif action == change_metric:
+                    self.change_metric = QWidget()
+                    self.change_metric.ui = Ui_EditLabel()
+                    self.change_metric.ui.setupUi(self.change_metric,pressed_vertex[3],self.graph)
+                    self.change_metric.show()
                 elif not pressed_vertex[3]._failed and action == fail_link:
                     pressed_vertex[3].failInterface()
                     self.graph.redeploy_demands()

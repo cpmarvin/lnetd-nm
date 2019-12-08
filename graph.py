@@ -73,6 +73,10 @@ class Interface:
             if interface.remote_ip == self.local_ip:
                 interface._failed = False
                 interface.util = 0
+
+    def change_metric(self,value):
+        self.metric = value
+
 class L1Node():
     "A class to hold L1Node"
 
