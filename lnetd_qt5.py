@@ -45,43 +45,12 @@ from dialogs.ui_link_info import Ui_link_info
 from dialogs.network_info import Ui_NetworkInfoForm
 from dialogs.edit_label import Ui_EditLabel
 
-'''
-class AddNode(QWidget):
-    def __init__(self,position):
-        super(AddNode, self).__init__()
-        self.position = position
-
-        # displays information about the app
-        self.about_button = QPushButton(
-            text="?",
-            #clicked=self.show_help,
-            sizePolicy=QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed),
-        )
-        # WIDGET LAYOUT
-        #main window layout
-        self.main_v_layout = QVBoxLayout(self, margin=0)
-        #layout for buttons
-        self.io_h_layout = QHBoxLayout(self, margin=0)
-        #add widget button to layout
-        self.io_h_layout.addWidget(self.about_button)
-
-        #add button layout to main layout
-        self.main_v_layout.addLayout(self.io_h_layout)
-        #finally set the layout as main window
-        self.setLayout(self.main_v_layout)
-
-        # WINDOW SETTINGS
-        #self.setWindowTitle("ddddd")
-        #self.setFont(QFont(self.font_family, self.font_size))
-        self.setWindowIcon(QIcon("icon.ico"))
-'''
 class TreeVisualizer(QWidget):
     def __init__(self):
         """Initial configuration."""
         super().__init__()
 
         # GLOBAL VARIABLES
-        # graph variables
         self.graph: Graph = Graph()
         self.selected_node: Node = None
 
@@ -134,12 +103,12 @@ class TreeVisualizer(QWidget):
         self.canvas_size: Vector = None
         self.canvas.resizeEvent = self.adjust_canvas_translation
 
-        # toggles between directed/undirected graphs , change the name later
-        self.directed_toggle_button = QPushButton(
-            text="Network Info", clicked=self.toggle_directed_graph
+        # toggles network_info
+        self.network_info_btn =  QPushButton(
+            text="Network Info", clicked=self.network_info
         )
-        #button to reset all demands
 
+        #button to reset all demands
         self.reset_all_demands_btn = QPushButton(
             text="Reset Demands", clicked=self.reset_all_demands
         )
@@ -222,16 +191,22 @@ class TreeVisualizer(QWidget):
         self.main_v_layout.addWidget(self.canvas)
 
         self.option_h_layout = QHBoxLayout(self, margin=self.layout_margins)
-        self.option_h_layout.addWidget(self.directed_toggle_button)
+        #add network button
+        self.option_h_layout.addWidget(self.network_info_btn)
+        #add spaceing
         self.option_h_layout.addSpacing(self.layout_item_spacing)
+        #add reset demands button
         self.option_h_layout.addWidget(self.reset_all_demands_btn)
         #remove at this stage , graph is always weighted
         #self.option_h_layout.addWidget(self.weighted_checkbox)
         self.option_h_layout.addSpacing(self.layout_item_spacing)
+        #add check for labels
         self.option_h_layout.addWidget(self.labels_checkbox)
         self.option_h_layout.addSpacing(self.layout_item_spacing)
+        #add check for forces
         self.option_h_layout.addWidget(self.forces_checkbox)
         self.option_h_layout.addSpacing(self.layout_item_spacing)
+        #add line edit for nodes/links label info
         self.option_h_layout.addWidget(self.input_line_edit)
 
         #add another box for demand
@@ -250,14 +225,18 @@ class TreeVisualizer(QWidget):
         #slider
         self.demand_h_layout.addWidget(self.input_demand_slider)
 
+        #add anothe box for IO
         self.io_h_layout = QHBoxLayout(self, margin=self.layout_margins)
-        #move this to file menu at some point
-
+        #import graph
         self.io_h_layout.addWidget(self.import_graph_button)
+        #import demands
         self.io_h_layout.addWidget(self.import_netflow_button)
         self.io_h_layout.addSpacing(self.layout_item_spacing)
+        #export graph
         self.io_h_layout.addWidget(self.export_graph_button)
         self.io_h_layout.addSpacing(self.layout_item_spacing)
+        #deploy demand button
+        #TODO change name to reflect
         self.io_h_layout.addWidget(self.spf_button)
         self.io_h_layout.addWidget(self.about_button)
 
@@ -279,10 +258,13 @@ class TreeVisualizer(QWidget):
         self.simulation_timer.start()
 
     def update_demand_value(self,valueOfSlider):
+        """Method to update the demand input value
+        with the value of slider"""
         text = str(valueOfSlider)
         self.input_line_demand.setText(text)
 
     def set_weighted_graph(self):
+        """TO BE REMOVED"""
         pass
         """Is called when the weighted checkbox is pressed; sets, whether the graph is
         weighted or not."""
@@ -310,6 +292,8 @@ class TreeVisualizer(QWidget):
         )
 
     def reset_all_demands(self):
+        """Reset all graph demands, usefull for starting over
+        without reloading the graph"""
         self.graph.remove_all_demands()
 
     def import_graph_lnetd(self):
@@ -319,23 +303,19 @@ class TreeVisualizer(QWidget):
         if path != "":
             try:
                 with open(path, "r") as file:
-                    # a list of vertices of the graph
                     lnetd_graph = json.load(file)
-                    #print(lnetd_graph)
+                    #generate_link_number add a link_num to json
+                    #TODO mode this to graph as a method , it's needed when adding new links
                     data = generate_link_number(lnetd_graph['links'])
-                    #data = generate_link_number(lnetd_links)
                     host_data = lnetd_graph['nodes']
-                    #print(host_data)
-                    #generate_link_number
 
                     # set the properties of the graph
                     directed = True
                     weighted = True
-
+                    #graph Object
                     graph = Graph(directed=directed, weighted=weighted)
 
                     node_dictionary = {}
-
                     # add each of the nodes of the vertex to the graph
                     for vertex in data:
                         vertex_components = vertex
@@ -349,7 +329,7 @@ class TreeVisualizer(QWidget):
                         l_ip = vertex_components['local_ip']
                         linknum = vertex_components['linknum']
                         capacity = vertex_components['capacity']
-                        print(vertex_components.get('remote_ip'))
+                        #print(vertex_components.get('remote_ip'))
                         for node in nodes:
                             import_coordinates = False
                             if node not in node_dictionary:
@@ -412,8 +392,6 @@ class TreeVisualizer(QWidget):
 
     def load_netflow_demands(self):
         path = QFileDialog.getOpenFileName()[0]
-        #path = "../examples/netflow_demands.json"
-        #print(path)
         if path != "":
             try:
                 if len(self.graph.nodes) == 0:
@@ -441,6 +419,7 @@ class TreeVisualizer(QWidget):
                     )
 
     def update_graph_spf(self, source: Node, target: Node):
+        #TODO remove , not needed now
         pass
 
     def set_checkbox_values(self):
@@ -455,6 +434,7 @@ class TreeVisualizer(QWidget):
         if path != "":
             try:
                 with open(path, "w") as file:
+                    #TODO redo this
                     graph = {}
                     graph['links'] = []
                     graph['nodes'] = self.graph.export_nodes()
@@ -496,6 +476,8 @@ class TreeVisualizer(QWidget):
         QMessageBox.information(self, "About", message)
 
     def run_spf(self):
+        """This is infact deploy demands"""
+        #TODO change name and redo
         source_label = self.input_line_source.text()
         target_label = self.input_line_target.text()
         demand_value = self.input_line_demand.text()
@@ -506,7 +488,6 @@ class TreeVisualizer(QWidget):
             demand_unit_multiplicate = 1000
         elif demand_unit_text =='Tbps':
             demand_unit_multiplicate = 1000000
-
 
         graph_nodes = self.graph.get_nodes_label()
 
@@ -532,7 +513,7 @@ class TreeVisualizer(QWidget):
             self.input_line_target.setPalette(palette)
             #source = self.graph.get_node_based_on_label(source_label)
             #target = self.graph.get_node_based_on_label(target_label)
-            #reset existing spf path
+            #reset existing spf path and demands if not additive
             if not self.additive_checkbox.isChecked():
                 #print(self.additive_checkbox.isChecked())
                 self.graph.remove_all_demands()
@@ -543,28 +524,14 @@ class TreeVisualizer(QWidget):
             self.graph.check_if_demand_exists_or_add(source_label,target_label,demand)
             #self.graph.add_demand(source=source_label,target=target_label,demand=demand)
 
-    #TODO change this  name to reflect
-    def toggle_directed_graph(self):
-        '''
-        self.network_info = QWidget()
-        self.network_info.ui = Ui_NetworkInfoForm()
-        self.network_info.setupUi(self.network_info)
-        '''
-        """Is called when the directed checkbox changes; toggles between directed and
-        undirected graphs."""
-        '''
-        self.graph.set_directed(not self.graph.is_directed())
-        self.update_directed_toggle_button_text()
-        '''
-        #test new window open , this will be the Graph Info
+    def network_info(self):
         self.network_info = QWidget()
         self.ui = Ui_NetworkInfoForm()
         self.ui.setupUi(self.network_info,self.graph)
         self.network_info.show()
 
-        pass
-
     def update_directed_toggle_button_text(self):
+        #TODO remove
         """Changes the text of the directed toggle button, according to whether the
         graph is directer or not."""
         self.directed_toggle_button.setText(

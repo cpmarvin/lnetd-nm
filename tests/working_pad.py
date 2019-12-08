@@ -110,3 +110,19 @@ load_demands(graph)
 #print(graph.get_all_interface())
 
 
+rotate_nodes_around(a,b,c)
+
+def wheelEvent(self, event):
+     self.rotate_nodes_around(
+                    self.selected_node.get_position(),
+                    scroll_distance * self.node_rotation_coefficient,
+                )
+
+     scroll_distance = radians(event.angleDelta().y() / 8)
+
+def rotate_nodes_around(self, point: Vector, angle: float):
+    """Rotates coordinates of all of the nodes in the same component as the selected
+    node by a certain angle (in radians) around it."""
+    for node in self.graph.get_nodes():
+        if self.graph.share_component(node, self.selected_node):
+            node.set_position((node.position - point).rotated(angle) + point)

@@ -54,19 +54,23 @@ class Ui_EditLabel(object):
         self.Save_btn.clicked.connect(self.change_metric)
 
         self.horizontalLayout_2.addWidget(self.Save_btn)
+        '''
         self.Cancel_btn = QtWidgets.QPushButton(self.horizontalLayoutWidget_2)
         self.Cancel_btn.setObjectName("Cancel_btn")
         self.horizontalLayout_2.addWidget(self.Cancel_btn)
+        '''
 
         self.retranslateUi(EditLabel)
         QtCore.QMetaObject.connectSlotsByName(EditLabel)
 
     def retranslateUi(self, EditLabel):
         _translate = QtCore.QCoreApplication.translate
-        EditLabel.setWindowTitle(_translate("EditLabel", "Form"))
-        self.Label.setText(_translate("EditLabel", "Label"))
+        EditLabel.setWindowTitle(_translate("EditLabel", "Link Edit"))
+        self.Label.setText(_translate("EditLabel", "Metric: "))
         self.Save_btn.setText(_translate("EditLabel", "Save"))
+        '''
         self.Cancel_btn.setText(_translate("EditLabel", "Cancel"))
+        '''
         self.lineEdit.setText(str(self.vertex.metric))
 
 
