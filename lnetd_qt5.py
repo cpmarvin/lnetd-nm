@@ -138,7 +138,11 @@ class TreeVisualizer(QWidget):
         self.directed_toggle_button = QPushButton(
             text="Network Info", clicked=self.toggle_directed_graph
         )
+        #button to reset all demands
 
+        self.reset_all_demands_btn = QPushButton(
+            text="Reset Demands", clicked=self.reset_all_demands
+        )
         # for showing the labels of the nodes
         self.labels_checkbox = QCheckBox(text="labels", checked=True)
 
@@ -181,6 +185,7 @@ class TreeVisualizer(QWidget):
             sizeAdjustPolicy = QComboBox.AdjustToContents,
             )
         self.demand_unit_select.addItems(["Mbps", "Gbps", "Tbps"])
+
         # run deploy demand based on source and target if they are set
         self.spf_button = QPushButton(
             text="Deploy Demand",
@@ -219,6 +224,7 @@ class TreeVisualizer(QWidget):
         self.option_h_layout = QHBoxLayout(self, margin=self.layout_margins)
         self.option_h_layout.addWidget(self.directed_toggle_button)
         self.option_h_layout.addSpacing(self.layout_item_spacing)
+        self.option_h_layout.addWidget(self.reset_all_demands_btn)
         #remove at this stage , graph is always weighted
         #self.option_h_layout.addWidget(self.weighted_checkbox)
         self.option_h_layout.addSpacing(self.layout_item_spacing)
@@ -302,6 +308,9 @@ class TreeVisualizer(QWidget):
         return (
             -(distance - leash_length) / 10 if self.forces_checkbox.isChecked() else 0
         )
+
+    def reset_all_demands(self):
+        self.graph.remove_all_demands()
 
     def import_graph_lnetd(self):
         """Is called when the import button is clicked; imports a graph from a file."""
