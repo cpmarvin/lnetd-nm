@@ -45,6 +45,7 @@ from dialogs.ui_link_info import Ui_link_info
 from dialogs.network_info import Ui_NetworkInfoForm
 from dialogs.edit_label import Ui_EditLabel
 from dialogs.change_name import Ui_ChangeName
+from dialogs.add_link import Ui_AddLink
 
 class TreeVisualizer(QWidget):
     def __init__(self):
@@ -52,7 +53,7 @@ class TreeVisualizer(QWidget):
         super().__init__()
 
         # GLOBAL VARIABLES
-        self.graph: Graph = Graph()
+        self.graph: Graph = Graph(directed=True,weighted=True)
         self.selected_node: Node = None
 
         self.vertex_positions: List[Tuple[Vector, Tuple[Node, Node]]] = []
@@ -683,6 +684,11 @@ class TreeVisualizer(QWidget):
                 if action == node_information:
                     print('node information')
                     pass
+                elif action == add_link:
+                    self.add_link = QWidget()
+                    self.add_link.ui = Ui_AddLink()
+                    self.add_link.ui.setupUi(self.add_link,pressed_node,self.graph)
+                    self.add_link.show()
                 elif action == change_name:
                     self.change_name = QWidget()
                     self.change_name.ui = Ui_ChangeName()
@@ -918,7 +924,7 @@ class TreeVisualizer(QWidget):
         # draw vertices; has to be drawn before nodes, so they aren't drawn on top
         for n1 in self.graph.get_nodes():
             for entry in n1.get_interfaces():
-                #for key in entry:
+                #print('paint event entry:',entry)
                 n2 = entry.target
                 weight = entry.metric
                 util = entry.utilization()
@@ -1152,6 +1158,7 @@ class TreeVisualizer(QWidget):
                             painter.setPen(QPen(Qt.white, Qt.SolidLine))
                             #print(new_rec.center().x())
                             #print(dir(painter))
+                            #print('this is the metruc in draw text',weight)
                             painter.drawText(new_rec, Qt.AlignCenter, str(weight))
                             #painter.drawText(ry,rx,str(weight))
                             painter.restore()

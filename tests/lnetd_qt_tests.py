@@ -144,12 +144,17 @@ def get_demand_between_nodes(graph,node1:str,node2:str,demand):
     return demand_result
 
 def test_demand_between_nodes():
-    expected_result = [{'10.7.10.10': 100.0}, {'10.5.10.5': 100.0}, {'10.6.7.7': 100.0}, {'10.5.11.11': 100.0}, {'10.2.6.6': 100.0}, {'10.111.13.13': 50.0}, {'10.11.13.13': 50.0}]
+    expected_result = [
+    {'10.7.10.10': 100.0}, {'10.5.10.5': 100.0}, {'10.6.7.7': 100.0}, {'10.5.11.11': 100.0},
+    {'10.2.6.6': 100.0}, {'10.111.13.13': 50.0}, {'10.11.13.13': 50.0}
+    ]
     assert get_demand_between_nodes(graph,'nl-p13-ams','ke-pe2-nbi',1000) == expected_result
 
 
 def test_demand_between_nodes_metric_changed():
-    interface_change = graph.get_interface_by_ip('10.111.13.13')
+    node = graph.get_node_by_interface_ip('10.111.13.13')
+    interface_change = node.get_interface_by_ip('10.111.13.13')
+
     interface_change.metric  = 99100
     result = get_demand_between_nodes(graph,node1,node2,1000)
     #reset interface metric
@@ -158,8 +163,10 @@ def test_demand_between_nodes_metric_changed():
     assert result == expected_result
 
 def test_demand_between_nodes_fail_interface():
-    interface_change = graph.get_interface_by_ip('10.11.13.13')
+    node = graph.get_node_by_interface_ip('10.11.13.13')
+    interface_change = node.get_interface_by_ip('10.11.13.13')
     interface_change.failInterface()
+
     result = get_demand_between_nodes(graph,node1,node2,1000)
     expected_result = [{'10.7.10.10': 100.0}, {'10.5.10.5': 100.0}, {'10.6.7.7': 100.0}, {'10.5.11.11': 100.0}, {'10.2.6.6': 100.0}, {'10.111.13.13': 100.0}]
     assert result == expected_result

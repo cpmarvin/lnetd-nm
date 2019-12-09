@@ -350,7 +350,7 @@ class Graph:
             raise Exception(f'{source} or {target} not in the Graph')
         demand_object = Demand(source_node,target_node,demand)
         self.demands.append(demand_object)
-        self.deploy_demands()
+        self.redeploy_demands()
         #self.reset_spf(demand=True)
 
     def check_if_demand_exists_or_add(self,source_label:str,target_label:str,demand:float):
@@ -401,7 +401,7 @@ class Graph:
         interface_list = []
         for node in all_nodes:
             for interface in node.interfaces:
-                print(interface.local_ip)
+                #print(interface.local_ip)
                 if interface.local_ip == local_ip:
                     return node
 
@@ -423,15 +423,12 @@ class Graph:
         self.redeploy_demands()
         self.calculate_components()
 
-    def add_vertex(self, n1: Node, n2: Node, metric: float = 0, util: float = 0, local_ip: str = 'None', linknum: int = 0, spf: str = '0', capacity: int = 0 , remote_ip: str = 'Node'):
-        """Adds a vertex from node n1 to node n2 (and vice versa, if it's not directed).
-        Only does so if the given vertex doesn't already exist."""
-        # from n1 to n2
-        #n1.neighbours.append({n2:weight})
-        #(self, target: Node , metric: int , local_ip: str , util : float, capacity: int , r_ip: str = None):
+    def add_vertex(self, n1: Node, n2: Node, metric: float = 0, util: float = 0, local_ip: str = 'None', linknum: int = 0,
+        spf: str = '0', capacity: int = 0 , remote_ip: str = 'Node'):
+        """Adds a vertex from node n1 to node n2"""
+        #print(f'iside add_vertex n1: {n1} , n2:{n2}')
         interface = Interface(target=n2,metric=metric,util=util,local_ip=local_ip,capacity=capacity,remote_ip=remote_ip,linknum=linknum)
         n1.interfaces.append(interface)
-
 
         self.calculate_components()
 
@@ -503,3 +500,26 @@ class Graph:
             interface_list += node.interfaces
         return interface_list
 
+    def update_linknum(self,node1: Node,node2: Node):
+
+        number_of_int_btw_nodes = [ interface for interface in node2.interfaces if interface.target == node1]
+        #print(len(number_of_int_btw_nodes))
+        i = 1
+        node1_int = node1.interfaces
+        node2_int = node2.interfaces
+        for number, interface in enumerate(node1_int):
+            if interface.target == node2 and interface.local_ip == node2.get_interface_by_ip(interface.remote_ip).remote_ip:
+                #print(f'found one interface with target {node2} - {interface} with local_ip {interface.local_ip} and remote_ip {interface.remote_ip} and link_num {interface.link_num}')
+                #print(f'updating link_num')
+                interface.link_num = i
+                #print(f'link_num is now {interface.link_num}')
+                node2_interface = node2.get_interface_by_ip(interface.remote_ip)
+                #print(f'found the pair interface {node2_interface} link_num {node2_interface.link_num}')
+                #print(f'updating link_num')
+                node2_interface.link_num = i
+                #print(f'link_num is now {node2_interface.link_num}')
+                i += 1
+        #small check , this should be equal
+        #TODO redo this
+        if i != len(number_of_int_btw_nodes) +1 :
+            raise Exception

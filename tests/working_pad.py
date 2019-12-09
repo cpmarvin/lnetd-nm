@@ -21,10 +21,12 @@ lnetd_links = [
     {'source': 'ke-p6-nbi', 'target': 'fr-p7-mrs', 'local_ip': '10.6.7.6', 'metric': '10', 'r_ip': '10.6.7.7', 'util': 0, 'capacity': 1000} ,
     {'source': 'ke-pe3-nbi', 'target': 'ke-pe2-nbi', 'local_ip': '10.2.3.3', 'metric': '5000', 'r_ip': '10.2.3.2', 'util': 0, 'capacity': 1000} ,
     {'source': 'ke-pe3-nbi', 'target': 'ke-pe2-nbi', 'local_ip': '10.22.33.33', 'metric': '10', 'r_ip': '10.22.33.22', 'util': 0, 'capacity': 1000} ,
+
     {'source': 'ke-pe2-nbi', 'target': 'ke-pe3-nbi', 'local_ip': '10.2.3.2', 'metric': '5000', 'r_ip': '10.2.3.3', 'util': 0, 'capacity': 1000} ,
     {'source': 'ke-pe2-nbi', 'target': 'ke-pe3-nbi', 'local_ip': '10.22.33.22', 'metric': '5000', 'r_ip': '10.22.33.33', 'util': 0, 'capacity': 1000} ,
+
     {'source': 'ke-pe2-nbi', 'target': 'ke-p6-nbi', 'local_ip': '10.2.6.2', 'metric': '10', 'r_ip': '10.2.6.6', 'util': 0, 'capacity': 1000} ,
-    {'source': 'ke-pe2-nbi', 'target': 'ke-pe3-nbi', 'local_ip': '10.22.33.22', 'metric': '10', 'r_ip': '10.22.33.33', 'util': 0, 'capacity': 1000} ,
+
     {'source': 'nl-p13-ams', 'target': 'gb-pe11-lon', 'local_ip': '10.111.13.13', 'metric': '10', 'r_ip': '10.111.13.11', 'util': 0, 'capacity': 1000} ,
     {'source': 'nl-p13-ams', 'target': 'gb-pe11-lon', 'local_ip': '10.11.13.13', 'metric': '10', 'r_ip': '10.11.13.11', 'util': 0, 'capacity': 1000} ,
     {'source': 'gb-pe11-lon', 'target': 'gb-pe5-lon', 'local_ip': '10.5.11.11', 'metric': '10', 'r_ip': '10.5.11.5', 'util': 0, 'capacity': 1000} ,
@@ -82,7 +84,8 @@ def load_graph(lnetd_links):
             util = util,
             local_ip =l_ip,
             linknum= linknum,
-            capacity= capacity
+            capacity= capacity,
+            remote_ip = vertex_components['r_ip']
         )
     return  graph
 
@@ -111,24 +114,49 @@ load_demands(graph)
 
 
 print(graph)
-def get_interface_by_ip(self,local_ip):
-    all_nodes = graph.get_nodes()
-    interface_list = []
-    for node in all_nodes:
-        interface_list += node.get_interfaces()
-    interface = [ interface for interface in interface_list if interface.local_ip == '1.1.1.1']
-    return interface[0]
 
-#get node by interface_ip
 
-def get_node_by_interface_ip(self,local_ip):
-    all_nodes = self.get_nodes()
-    interface_list = []
-    for node in all_nodes:
-        for interface in node.interfaces:
-            print(interface.local_ip)
-            if interface.local_ip == local_ip:
-                return node
 
-print(get_node_by_interface_ip('10.5.10.10'))
+node_list = graph.get_nodes()
+print(node_list)
 
+def generate_link_number(lnetd_links):
+    i = 0
+    while i < len(lnetd_links):
+        if i==0:
+            lnetd_links[1]['linknum'] = 1
+        if lnetd_links[i]['source'] == lnetd_links[i-1]['source'] and lnetd_links[i]['target'] == lnetd_links[i-1]['target']:
+            lnetd_links[i]['linknum'] = lnetd_links[i-1]['linknum'] + 1;
+        else:
+            lnetd_links[i]['linknum'] = 1;
+        i = i+1
+    return lnetd_links
+
+def update_linknum(node1,node2):
+
+    number_of_int_btw_nodes = [ interface for interface in node2.interfaces if interface.target == node1]
+    #print(len(number_of_int_btw_nodes))
+    i = 1
+    node1_int = node1.interfaces
+    node2_int = node2.interfaces
+    for number, interface in enumerate(node1_int):
+        if interface.target == node2 and interface.local_ip == node2.get_interface_by_ip(interface.remote_ip).remote_ip:
+            #print(f'found one interface with target {node2} - {interface} with local_ip {interface.local_ip} and remote_ip {interface.remote_ip} and link_num {interface.link_num}')
+            #print(f'updating link_num')
+            interface.link_num = i
+            #print(f'link_num is now {interface.link_num}')
+            node2_interface = node2.get_interface_by_ip(interface.remote_ip)
+            #print(f'found the pair interface {node2_interface} link_num {node2_interface.link_num}')
+            #print(f'updating link_num')
+            node2_interface.link_num = i
+            #print(f'link_num is now {node2_interface.link_num}')
+            i += 1
+    #small check , this should be equal
+    #TODO redo this
+    if i != len(number_of_int_btw_nodes) +1 :
+        raise Exception
+
+
+
+
+update_linknum(node_list[6],node_list[7])

@@ -1,9 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Form</class>
- <widget class="QWidget" name="Form">
+ <class>AddLink</class>
+ <widget class="QWidget" name="AddLink">
   <property name="windowModality">
    <enum>Qt::WindowModal</enum>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>430</width>
+    <height>279</height>
+   </rect>
   </property>
   <property name="focusPolicy">
    <enum>Qt::ClickFocus</enum>
@@ -14,133 +22,314 @@
   <property name="windowTitle">
    <string/>
   </property>
-  <widget class="QWidget" name="verticalLayoutWidget">
+  <widget class="QWidget" name="horizontalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>120</x>
      <y>30</y>
-     <width>151</width>
-     <height>151</height>
+     <width>195</width>
+     <height>23</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QHBoxLayout" name="source_layout">
     <item>
-     <widget class="QLabel" name="label_2">
+     <widget class="QLabel" name="source_lbl">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>65</width>
+        <height>0</height>
+       </size>
+      </property>
       <property name="text">
-       <string>TargetNode</string>
+       <string>Source</string>
       </property>
      </widget>
     </item>
     <item>
-     <widget class="QLabel" name="label">
+     <widget class="QLineEdit" name="source_txt">
+      <property name="minimumSize">
+       <size>
+        <width>110</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>110</width>
+        <height>16777215</height>
+       </size>
+      </property>
       <property name="text">
-       <string>SourceNode</string>
+       <string>A</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QPushButton" name="add_btn">
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>210</y>
+     <width>160</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Add</string>
+   </property>
+  </widget>
+  <widget class="QWidget" name="horizontalLayoutWidget_2">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>60</y>
+     <width>195</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="target_layout">
+    <item>
+     <widget class="QLabel" name="target_lbl">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>65</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Target</string>
       </property>
      </widget>
     </item>
     <item>
-     <widget class="QLabel" name="label_3">
+     <widget class="QLineEdit" name="target_txt">
+      <property name="minimumSize">
+       <size>
+        <width>110</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>110</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>A</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="horizontalLayoutWidget_3">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>90</y>
+     <width>195</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="local_ip_layout">
+    <item>
+     <widget class="QLabel" name="local_ip_lbl">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>65</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Local IP</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="local_ip_txt">
+      <property name="minimumSize">
+       <size>
+        <width>110</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>110</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>A</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="horizontalLayoutWidget_4">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>120</y>
+     <width>195</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="remote_ip_layout">
+    <item>
+     <widget class="QLabel" name="remote_ip_lbl">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>65</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Remote IP</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="remote_ip_txt">
+      <property name="minimumSize">
+       <size>
+        <width>110</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>110</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>A</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="horizontalLayoutWidget_5">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>150</y>
+     <width>195</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="metric_layout">
+    <item>
+     <widget class="QLabel" name="metric_lbl">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>65</width>
+        <height>0</height>
+       </size>
+      </property>
       <property name="text">
        <string>Metric</string>
       </property>
      </widget>
     </item>
     <item>
-     <widget class="QLabel" name="label_4">
-      <property name="text">
-       <string>Local_IP</string>
+     <widget class="QLineEdit" name="metric_txt">
+      <property name="minimumSize">
+       <size>
+        <width>110</width>
+        <height>0</height>
+       </size>
       </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QLabel" name="label_5">
-      <property name="text">
-       <string>Remote_IP</string>
+      <property name="maximumSize">
+       <size>
+        <width>110</width>
+        <height>16777215</height>
+       </size>
       </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="verticalLayoutWidget_2">
-   <property name="geometry">
-    <rect>
-     <x>180</x>
-     <y>30</y>
-     <width>161</width>
-     <height>151</height>
-    </rect>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout_2">
-    <item>
-     <widget class="QLineEdit" name="lineEdit">
       <property name="text">
        <string>A</string>
       </property>
      </widget>
     </item>
-    <item>
-     <widget class="QLineEdit" name="lineEdit_2">
-      <property name="text">
-       <string>B</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QLineEdit" name="lineEdit_3">
-      <property name="text">
-       <string>10</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QLineEdit" name="lineEdit_4">
-      <property name="text">
-       <string>10.1.1.1</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QLineEdit" name="lineEdit_5">
-      <property name="text">
-       <string>10.2.2.2</string>
-      </property>
-     </widget>
-    </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="verticalLayoutWidget_3">
+  <widget class="QWidget" name="horizontalLayoutWidget_6">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>190</y>
-     <width>160</width>
-     <height>80</height>
+     <x>120</x>
+     <y>180</y>
+     <width>195</width>
+     <height>23</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout_3">
+   <layout class="QHBoxLayout" name="capacity_layout">
     <item>
-     <widget class="QPushButton" name="pushButton_2">
+     <widget class="QLabel" name="capacity_lbl">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>65</width>
+        <height>0</height>
+       </size>
+      </property>
       <property name="text">
-       <string>Cancel</string>
+       <string>Capacity</string>
       </property>
      </widget>
     </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="verticalLayoutWidget_4">
-   <property name="geometry">
-    <rect>
-     <x>180</x>
-     <y>190</y>
-     <width>160</width>
-     <height>80</height>
-    </rect>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout_4">
     <item>
-     <widget class="QPushButton" name="pushButton_3">
+     <widget class="QLineEdit" name="capacity_txt">
+      <property name="minimumSize">
+       <size>
+        <width>110</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>110</width>
+        <height>16777215</height>
+       </size>
+      </property>
       <property name="text">
-       <string>Add</string>
+       <string>A</string>
       </property>
      </widget>
     </item>
