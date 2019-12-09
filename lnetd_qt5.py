@@ -11,7 +11,7 @@ import ast
 # PyQt5
 
 from PyQt5.QtCore import Qt, QSize, QTimer, QPointF, QRectF, QMetaObject, QRect , QCoreApplication, QPoint, QLineF
-from PyQt5.QtGui import QPainter, QBrush, QPen, QFont, QIcon, QTransform
+from PyQt5.QtGui import QPainter, QBrush, QPen, QFont, QIcon, QTransform, QPalette, QColor
 from PyQt5.QtWidgets import (
     QApplication,
     QWidget,
@@ -44,6 +44,7 @@ from utilities import *
 from dialogs.ui_link_info import Ui_link_info
 from dialogs.network_info import Ui_NetworkInfoForm
 from dialogs.edit_label import Ui_EditLabel
+from dialogs.change_name import Ui_ChangeName
 
 class TreeVisualizer(QWidget):
     def __init__(self):
@@ -188,6 +189,7 @@ class TreeVisualizer(QWidget):
 
         # WIDGET LAYOUT
         self.main_v_layout = QVBoxLayout(self, margin=0)
+
         self.main_v_layout.addWidget(self.canvas)
 
         self.option_h_layout = QHBoxLayout(self, margin=self.layout_margins)
@@ -674,10 +676,23 @@ class TreeVisualizer(QWidget):
                     fail_node = cmenu.addAction("Node DOWN")
 
                 node_information = cmenu.addAction("Node Info")
+                delete_node = cmenu.addAction("Delete Node")
+                add_link = cmenu.addAction("Add Link")
+                change_name = cmenu.addAction("Change Name")
                 action = cmenu.exec_(self.mapToGlobal(event.pos()))
                 if action == node_information:
                     print('node information')
                     pass
+                elif action == change_name:
+                    self.change_name = QWidget()
+                    self.change_name.ui = Ui_ChangeName()
+                    self.change_name.ui.setupUi(self.change_name,pressed_node,self.graph)
+                    self.change_name.show()
+                    pass
+                elif action == delete_node:
+                    self.graph.remove_node(pressed_node)
+                    self.deselect_node()
+
                 elif not pressed_node._failed and action == fail_node:
                     pressed_node.failNode()
                     self.graph.redeploy_demands()
@@ -692,6 +707,7 @@ class TreeVisualizer(QWidget):
                     fail_link = cmenu.addAction("Link DOWN")
                 link_information = cmenu.addAction("Link Info")
                 change_metric = cmenu.addAction("Change Link Metric")
+                delete_interface = cmenu.addAction("Delete Interface")
                 action = cmenu.exec_(self.mapToGlobal(event.pos()))
                 if action == link_information:
                     #bring up the link_info window
@@ -710,8 +726,18 @@ class TreeVisualizer(QWidget):
                 elif pressed_vertex[3]._failed and action == unfail_link:
                     pressed_vertex[3].unfailInterface()
                     self.graph.redeploy_demands()
+                elif action == delete_interface:
+                    self.graph.remove_interface(pressed_vertex[3])
                 #select_vertex
             else:
+                add_node_action = cmenu.addAction("Add Node")
+                action = cmenu.exec_(self.mapToGlobal(event.pos()))
+                if action == add_node_action:
+                    print("add node",pos)
+                    node = self.graph.add_node(pos, self.node_radius)
+                    node._failed = True
+                    self.select_node(node)
+                    self.deselect_vertex()
                 pass
             #cmenu = QMenu(self)
             #newAct = cmenu.addAction("New")
@@ -874,12 +900,12 @@ class TreeVisualizer(QWidget):
         painter.setRenderHint(QPainter.Antialiasing, True)
 
         painter.setPen(QPen(Qt.black, Qt.SolidLine))
-        painter.setBrush(QBrush(Qt.white, Qt.SolidPattern))
+        #painter.setBrush(QBrush(Qt.lightGray, Qt.SolidPattern))
 
         painter.setClipRect(0, 0, self.canvas.width(), self.canvas.height())
 
         # background
-        painter.drawRect(0, 0, self.canvas.width(), self.canvas.height())
+        #painter.drawRect(0, 0, self.canvas.width(), self.canvas.height())
 
         painter.translate(*self.translation)
         painter.scale(self.scale, self.scale)
@@ -902,7 +928,7 @@ class TreeVisualizer(QWidget):
                 if entry._failed:
                     link_color = Qt.red
                 elif util == 0:
-                    link_color = Qt.gray
+                    link_color = Qt.darkGray
                 elif 0 < util < 10:
                     link_color = Qt.blue
                 elif 10 <= util < 30:
@@ -1142,7 +1168,10 @@ class TreeVisualizer(QWidget):
         for node in self.graph.get_nodes():
 
             # set the color according to whether it's selected
-            painter.setBrush(
+            if node._failed:
+                painter.setBrush(QBrush(Qt.red,Qt.SolidPattern))
+            else:
+                painter.setBrush(
                 QBrush(
                     self.selected_color
                     if node is self.selected_node
@@ -1159,10 +1188,9 @@ class TreeVisualizer(QWidget):
 
             if self.labels_checkbox.isChecked():
                 label = node.get_label()
-
                 # scale font down, depending on the length of the label of the node
-                #painter.setFont(QFont(self.font_family, self.font_size / len(label)))
-
+                #painter.setFont(QFont(self.font_family, self.font_size / label))
+                painter.setFont(QFont(self.font_family, self.font_size / 3 ))
                 # draw the node label within the node dimensions
                 painter.drawText(
                     QRectF(*(node_position - node_radius), *(2 * node_radius)),
@@ -1171,6 +1199,14 @@ class TreeVisualizer(QWidget):
                 )
 
 
+
 app = QApplication(sys.argv)
+
+#TODO add some nice css
+#import qdarkstyle
+#app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+app.setStyleSheet("QMainWindow{background-color: gray} QFrame { border: 1px solid black } ")
+
+#app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
 ex = TreeVisualizer()
 sys.exit(app.exec_())

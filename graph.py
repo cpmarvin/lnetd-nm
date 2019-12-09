@@ -192,6 +192,15 @@ class Node:
         self._failed = False
         for interface in self.interfaces:
             interface.unfailInterface()
+
+    def removeInterface(self,interface):
+        self.get_interfaces().remove(interface)
+
+    def get_interface_by_ip(self,local_ip):
+        for interface in self.interfaces:
+            if interface.local_ip == local_ip:
+                return interface
+
 class Graph:
     """A class for working with graphs."""
 
@@ -378,9 +387,40 @@ class Graph:
 
         # remove all of its vertices
         for node in self.get_nodes():
-            if node_to_be_removed in node.neighbours:
-                del node.get_neighbours()[node_to_be_removed]
+            for interface in node.get_interfaces():
+                print (interface.target)
+                if node_to_be_removed  == interface.target:
+                    #TODO
+                    node.removeInterface(interface)
+        self.redeploy_demands()
+        self.calculate_components()
 
+
+    def get_node_by_interface_ip(self,local_ip):
+        all_nodes = self.get_nodes()
+        interface_list = []
+        for node in all_nodes:
+            for interface in node.interfaces:
+                print(interface.local_ip)
+                if interface.local_ip == local_ip:
+                    return node
+
+    def remove_interface(self,interface_to_be_removed:Interface):
+        #find the other interface so we remove both
+        #find the node that has this ip
+        node_source = self.get_node_by_interface_ip(interface_to_be_removed.local_ip)
+        # i already know the target node as it's in the Interface Object
+        node_target = interface_to_be_removed.target
+        # i know the remove ip
+        remote_ip = interface_to_be_removed.remote_ip
+        # find the interface based on ip
+        remote_interface = node_target.get_interface_by_ip(str(remote_ip))
+        #remove selected interface and his pair
+        print('interface_to_be_removed',interface_to_be_removed)
+        print('remote_interface',remote_interface)
+        node_source.removeInterface(interface_to_be_removed)
+        node_target.removeInterface(remote_interface)
+        self.redeploy_demands()
         self.calculate_components()
 
     def add_vertex(self, n1: Node, n2: Node, metric: float = 0, util: float = 0, local_ip: str = 'None', linknum: int = 0, spf: str = '0', capacity: int = 0 , remote_ip: str = 'Node'):
@@ -443,11 +483,7 @@ class Graph:
                     G[u][v][d]['data'].util += int(demand_path)/int(num_ecmp_links)
                     G[u][v][d]['data']._on_spf = True
                 u=v
-    def get_interface_by_ip(self,label):
-        for node in self.nodes:
-            for interface in node.interfaces:
-                if interface.local_ip == label:
-                    return interface
+
     def get_demands(self):
         return self.demands
 

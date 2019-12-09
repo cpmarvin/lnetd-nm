@@ -110,19 +110,25 @@ load_demands(graph)
 #print(graph.get_all_interface())
 
 
-rotate_nodes_around(a,b,c)
+print(graph)
+def get_interface_by_ip(self,local_ip):
+    all_nodes = graph.get_nodes()
+    interface_list = []
+    for node in all_nodes:
+        interface_list += node.get_interfaces()
+    interface = [ interface for interface in interface_list if interface.local_ip == '1.1.1.1']
+    return interface[0]
 
-def wheelEvent(self, event):
-     self.rotate_nodes_around(
-                    self.selected_node.get_position(),
-                    scroll_distance * self.node_rotation_coefficient,
-                )
+#get node by interface_ip
 
-     scroll_distance = radians(event.angleDelta().y() / 8)
+def get_node_by_interface_ip(self,local_ip):
+    all_nodes = self.get_nodes()
+    interface_list = []
+    for node in all_nodes:
+        for interface in node.interfaces:
+            print(interface.local_ip)
+            if interface.local_ip == local_ip:
+                return node
 
-def rotate_nodes_around(self, point: Vector, angle: float):
-    """Rotates coordinates of all of the nodes in the same component as the selected
-    node by a certain angle (in radians) around it."""
-    for node in self.graph.get_nodes():
-        if self.graph.share_component(node, self.selected_node):
-            node.set_position((node.position - point).rotated(angle) + point)
+print(get_node_by_interface_ip('10.5.10.10'))
+
