@@ -3,203 +3,11 @@ from dataclasses import dataclass
 from typing import Set, List
 import networkx as nx
 
-class Demand:
-    """A class for demand"""
+from objects.node import Node
+from objects.l1node import L1Node
+from objects.interface import Interface
+from objects.demand import Demand
 
-    def __init__(self,source:Node,target:Node,demand:float):
-        self.source = source
-        self.target = target
-        self.demand = demand
-
-class Circuit:
-    "A class for L1 circuit"
-    def __init__(self, label : str , target: L1Node, linknum: int = 1):
-        self.label = label
-        self.target = target
-        self.linknum = linknum
-        self.interfaces = []
-        self._failed = False
-
-    def __repr__(self):
-        return self.label
-
-    def _fail(self):
-        for interface in self.interfaces:
-            interface.failInterface()
-        self._failed = True
-
-
-class Interface:
-    """A class for interface model"""
-
-    def __init__(self, target: Node , metric: int , local_ip: str , util : float, capacity: int , remote_ip: str = None,linknum: int = 1):
-        self.target = target
-        self.metric = metric
-        self.util = 0 #util
-        self.capacity = capacity
-        self.local_ip = local_ip
-        self.remote_ip = remote_ip
-        self._failed = False
-        self._on_spf = False
-        self.link_num = linknum
-
-    def __repr__(self):
-        return self.local_ip
-
-    def _networkX(self):
-        return {"metric":self.metric}
-
-    def utilization(self):
-        """Returns utilization percent = (self.traffic/self.capacity)*100 """
-        return (self.util / self.capacity)*100
-
-    def get_label(self):
-        return str(self.local_ip)
-
-    def failInterface(self):
-        """TODO fail the other end of the interafce ? """
-        self._failed = True
-        self.util = 0
-        for interface in self.target.interfaces:
-            if interface.remote_ip == self.local_ip:
-                interface._failed = True
-                interface.util = 0
-
-    def unfailInterface(self):
-        """TODO fail the other end of the interafce ? """
-        self._failed = False
-        self.util = 0
-        for interface in self.target.interfaces:
-            if interface.remote_ip == self.local_ip:
-                interface._failed = False
-                interface.util = 0
-
-    def change_metric(self,value):
-        self.metric = value
-
-class L1Node():
-    "A class to hold L1Node"
-
-    def __init__(self, position: Vector, radius: float, label: str = None):
-        #super(self.Node).__init__()
-        self.circuits = []
-        self._failed = False
-
-    def get_circuits(self):
-        return self.circuits
-
-    def failNode(self):
-        for circuit in self.circuits:
-            circuit.failCircuit()
-        self._failed = True
-
-class Node:
-    """A class for working with of nodes in a graph."""
-
-    def __init__(self, position: Vector, radius: float, label: str = None):
-        self.position = position
-        self.radius = radius
-        self.label = label
-
-        #self.neighbours: Dict[Node, float] = {}
-        self.interfaces: List[Interface] = []
-        self.forces: List[Vector] = []
-        self._failed = False
-
-    def __repr__(self) -> str:
-        return self.label
-
-    def get_x(self) -> float:
-        """Returns the x coordinate of the node."""
-        return self.position[0]
-
-    def get_y(self) -> float:
-        """Returns the y coordinate of the node."""
-        return self.position[1]
-
-    def get_position(self) -> Vector:
-        """Returns the y coordinate of the node."""
-        return self.position
-
-    def get_radius(self) -> float:
-        """Returns the radius of the node."""
-        return self.radius
-
-    def get_neighbours(self) -> List[Node]:
-        """Returns the neighbours of the node."""
-        neigh_list = [ interface.target for interface in self.interfaces ]
-        return neigh_list
-
-    def get_neighbours1(self) -> Dict[Node, float]:
-        """Returns the neighbours of the node."""
-        neighbours = {}
-        for n in self.neighbours:
-            neighbours[n['neighbour']] = n['metric']
-
-        return neighbours
-
-    def get_interfaces(self) -> List[Interface]:
-        """Returns the interfaces of a node"""
-        return self.interfaces
-
-    def get_label(self) -> str:
-        """Returns the label of the node."""
-        return self.label
-
-    def set_x(self, value: float):
-        """Sets the x coordinate of the node to the specified value."""
-        self.position[0] = value
-
-    def set_y(self, value):
-        """Sets the y coordinate of the node to the specified value."""
-        self.position[1] = value
-
-    def set_position(self, value: Vector):
-        """Sets the position of the node to the specified value."""
-        self.position = value
-
-    def set_label(self, label: str):
-        """Sets the label of the node to the specified value."""
-        self.label = label
-
-    def add_force(self, force: Vector):
-        """Adds a force that is acting upon the node to the force list."""
-        self.forces.append(force)
-
-    def evaluate_forces(self):
-        """Evaluates all of the forces acting upon the node and moves it accordingly."""
-        while len(self.forces) != 0:
-            self.position += self.forces.pop()
-
-    def export_links(self):
-        exported_links = []
-        for link in self.interfaces:
-            exported_links.append({"source":self.label,
-                    "target":link.target.label,
-                    "metric":link.metric,
-                    "util":link.util,
-                    "capacity":link.capacity,
-                    "local_ip":link.local_ip,
-                    "remote_ip":link.remote_ip})
-        return exported_links
-
-    def failNode(self):
-        self._failed = True
-        for interface in self.interfaces:
-            interface.failInterface()
-
-    def unfailNode(self):
-        self._failed = False
-        for interface in self.interfaces:
-            interface.unfailInterface()
-
-    def removeInterface(self,interface):
-        self.get_interfaces().remove(interface)
-
-    def get_interface_by_ip(self,local_ip):
-        for interface in self.interfaces:
-            if interface.local_ip == local_ip:
-                return interface
 
 class Graph:
     """A class for working with graphs."""
@@ -209,6 +17,7 @@ class Graph:
         self.weighted = weighted
 
         self.nodes: List[Node] = []
+        self.l1nodes: List[L1Node] = []
         self.components: Set[Node] = []
         self.demands: List[Demand] = []
 
@@ -465,21 +274,26 @@ class Graph:
             for interface in node.interfaces:
                 if not interface._failed:
                     G.add_edge(node,interface.target,**interface._networkX(),data=interface)
-
-        paths = list(nx.all_shortest_paths(G, source, target, weight='metric'))
-        num_ecmp_paths = len(paths)
-        demand_path = demand / num_ecmp_paths
-        for p in paths:
-            u=p[0]
-            for v in p[1:]:
-                values_u_v = G[u][v].values()
-                min_weight = min(d['metric'] for d in values_u_v)
-                ecmp_links = [k for k, d in G[u][v].items() if d['metric'] == min_weight]
-                num_ecmp_links = len(ecmp_links)
-                for d in ecmp_links:
-                    G[u][v][d]['data'].util += int(demand_path)/int(num_ecmp_links)
-                    G[u][v][d]['data']._on_spf = True
-                u=v
+        try:
+            paths = list(nx.all_shortest_paths(G, source, target, weight='metric'))
+            num_ecmp_paths = len(paths)
+            demand_path = demand / num_ecmp_paths
+            for p in paths:
+                u=p[0]
+                for v in p[1:]:
+                    values_u_v = G[u][v].values()
+                    min_weight = min(d['metric'] for d in values_u_v)
+                    ecmp_links = [k for k, d in G[u][v].items() if d['metric'] == min_weight]
+                    num_ecmp_links = len(ecmp_links)
+                    for d in ecmp_links:
+                        G[u][v][d]['data'].util += int(demand_path)/int(num_ecmp_links)
+                        G[u][v][d]['data']._on_spf = True
+                    u=v
+        except Exception:
+            #TODO Exception propagation
+            pass
+            #raise
+            #self.faildemands.append()
 
     def get_demands(self):
         return self.demands
@@ -523,3 +337,30 @@ class Graph:
         #TODO redo this
         if i != len(number_of_int_btw_nodes) +1 :
             raise Exception
+
+    def get_all_circuits(self):
+        all_graph_circuits = []
+        for l1node in self.l1nodes:
+            all_graph_circuits += l1node.get_circuits()
+        return all_graph_circuits
+
+    def get_circuits_l1_node(self,n1):
+        """Return a list of circuits where n1
+        is either a source or a target in the graph"""
+        #Create Graph MultiGraph ( undirected )
+        circuit_list = []
+        G = nx.MultiGraph()
+        for node in self.l1nodes:
+            for circuit in node.circuits:
+                G.add_edge(node,circuit.target,data=circuit)
+        #find all circuits
+        for circuit in G.edges(n1):
+            u=circuit[0]
+            for v in circuit[1:]:
+                ecmp_links = [k for k, d in G[u][v].items()]
+                for d in ecmp_links:
+                    if G[u][v][d]['data'] not in circuit_list:
+                        circuit_list.append(G[u][v][d]['data'])
+                u=v
+
+        return circuit_list

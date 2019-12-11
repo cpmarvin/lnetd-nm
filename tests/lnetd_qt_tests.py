@@ -1,8 +1,13 @@
 import sys
 sys.path.append('../')
 
-from graph import Graph,Node,Interface,Demand
-from graph import L1Node,Circuit
+from objects.graph import Graph
+from objects.node import Node
+from objects.l1node import L1Node
+from objects.interface import Interface
+from objects.demand import Demand
+from objects.circuit import Circuit
+
 from utilities import *
 
 lnetd_links = [
@@ -114,25 +119,7 @@ def test_number_of_links():
 # get two nodes from graph
 node1 = graph.get_node_based_on_label('nl-p13-ams')
 node2 = graph.get_node_based_on_label('ke-pe2-nbi')
-'''
-def get_spf_between_nodes(graph,node1,node2):
-    spf = graph.GetSpfPath(node1,node2,0)
-    spf_result = []
-    for node in graph.nodes:
-        for interface in node.interfaces:
-            if interface._on_spf:
-                spf_result.append({interface.get_label(): interface.utilization()})
-    graph.reset_spf()
-    return(spf_result)
 
-def test_spf_path_between_nodes():
-    expected_result = [{'10.7.10.10': 0.0}, {'10.5.10.5': 0.0}, {'10.6.7.7': 0.0}, {'10.5.11.11': 0.0},
-                       {'10.2.6.6': 0.0}, {'10.111.13.13': 0.0}, {'10.11.13.13': 0.0}
-                       ]
-    print(expected_result)
-    assert get_spf_between_nodes(graph,node1,node2) == expected_result
-
-'''
 def get_demand_between_nodes(graph,node1:str,node2:str,demand):
     depoly_demand = graph.check_if_demand_exists_or_add(str(node1),str(node2),demand)
     demand_result = []

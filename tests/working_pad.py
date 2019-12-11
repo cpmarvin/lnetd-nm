@@ -2,8 +2,9 @@ import sys
 import json
 sys.path.append('../')
 
-from graph import Graph,Node,Interface,Demand
-from graph import L1Node,Circuit
+from objects.graph import Graph,Node,Interface,Demand
+from objects.l1node import L1Node
+from objects.circuit import Circuit
 from utilities import *
 
 lnetd_links = [
@@ -92,10 +93,21 @@ def load_graph(lnetd_links):
 graph = load_graph(lnetd_links)
 
 
-graph.check_if_demand_exists_or_add('nl-p13-ams','ke-pe2-nbi',500)
+graph.check_if_demand_exists_or_add('ke-pe3-nbi','nl-p13-ams',500)
+print('start',graph.demands)
+#graph.check_if_demand_exists_or_add('ke-pe2-nbi','nl-p113-ams',100)
 #print('start',graph.demands)
-graph.check_if_demand_exists_or_add('ke-pe2-nbi','nl-p13-ams',100)
-#print('start',graph.demands)
+node1 = graph.get_node_based_on_label('nl-p13-ams')
+node2 = graph.get_node_based_on_label('ke-pe2-nbi')
+#node1.failNode()
+'''
+try:
+    graph.check_if_demand_exists_or_add('ke-pe3-nbi','nl-p13-ams',500)
+except Exception as e:
+    print('ddd',e)
+'''
+graph.check_if_demand_exists_or_add('ke-pe3-nbi','nl-p13-ams',500)
+
 
 print('start',graph.demands)
 def load_demands(graph):
@@ -159,4 +171,77 @@ def update_linknum(node1,node2):
 
 
 
-update_linknum(node_list[6],node_list[7])
+#update_linknum(node_list[6],node_list[7])
+#self, label : str , target: L1Node, linknum: int = 1
+
+def load_dummy(graph):
+    all_intefaces = graph.get_all_interface()
+    #print(all_intefaces)
+
+    uk_a = L1Node(Vector(-220,60),radius=15,label='DWDM-UK-A')
+    nl_a = L1Node(Vector(-30,60),radius=15,label='DWDM-NL-A')
+    fr_a = L1Node(Vector(-10,180),radius=15,label='DWDM-FR-A')
+    ke_a = L1Node(Vector(-180,180),radius=15,label='DWDM-KE-A')
+
+
+    uk_a_nl_a_1 = Circuit(label='SEGMENT-1',target=nl_a,link_num=1)
+    uk_a_nl_a_1.interfaces.append(all_intefaces[0])
+    uk_a_nl_a_1.interfaces.append(all_intefaces[1])
+
+
+    uk_a_nl_a_2 = Circuit(label='SEGMENT-2',target=nl_a,link_num=2)
+    #uk_a_nl_a_2.interfaces.append(self.graph.get_node_by_interface_ip('10.11.13.11'))
+
+    nl_a_fr_a = Circuit(label='SEGMENT-1',target=fr_a,link_num=1)
+    #nl_a_fr_a.interfaces.append(self.graph.get_node_by_interface_ip('10.111.13.11'))
+    #nl_a_fr_a.interfaces.append(self.graph.get_node_by_interface_ip('10.11.13.11'))
+
+    fr_a_ke_a = Circuit(label='SEGMENT-2',target=ke_a,link_num=1)
+    #fr_a_ke_a.interfaces.append(self.graph.get_node_by_interface_ip('10.6.7.7'))
+
+
+    uk_a.circuits.append(uk_a_nl_a_1)
+    uk_a.circuits.append(uk_a_nl_a_2)
+    nl_a.circuits.append(nl_a_fr_a)
+    fr_a.circuits.append(fr_a_ke_a)
+
+    graph.l1nodes.append(uk_a)
+    graph.l1nodes.append(nl_a)
+    graph.l1nodes.append(fr_a)
+    graph.l1nodes.append(ke_a)
+
+
+
+load_dummy(graph)
+print(graph.l1nodes)
+failed_l3_interface = [ interface for interface in graph.get_all_interface() if interface._failed]
+print(failed_l3_interface)
+
+
+import networkx as nx
+def get_all_l1_node_interfaces(graph,n1):
+    """Return a list of circuits where n1
+    is either a source or a target in the graph"""
+    #Create Graph
+    circuit_list = []
+    G = nx.MultiGraph()
+    for node in graph.l1nodes:
+        for circuit in node.circuits:
+            G.add_edge(node,circuit.target,data=circuit)
+    #find all circuits
+    print('>>Node',n1)
+    print('>>Edges',G.edges(n1))
+    for circuit in G.edges(n1):
+        u=circuit[0]
+        for v in circuit[1:]:
+            ecmp_links = [k for k, d in G[u][v].items()]
+            for d in ecmp_links:
+                if G[u][v][d]['data'] not in circuit_list:
+                    circuit_list.append(G[u][v][d]['data'])
+            u=v
+
+    return circuit_list
+
+
+t = get_all_l1_node_interfaces(graph,graph.l1nodes[1])
+print(t)

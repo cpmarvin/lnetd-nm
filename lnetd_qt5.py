@@ -29,15 +29,19 @@ from PyQt5.QtWidgets import (
     QDialog,
     QComboBox,
     QLabel,
-    QSpacerItem
+    QSpacerItem,
+    QMainWindow,
+    QMenuBar
 )
 
 # graph stuff
-from graph import Graph, Node
+from objects.graph import Graph
+from objects.node import Node
 
 # utilities stuff
 from utilities import *
 
+from l1_model import L1Model
 #qt creator ui's
 #from add_link import Ui_Form
 
@@ -110,6 +114,9 @@ class TreeVisualizer(QWidget):
             text="Network Info", clicked=self.network_info
         )
 
+        self.l1_model_btn = QPushButton(
+            text="L1 Model", clicked=self.l1_model
+        )
         #button to reset all demands
         self.reset_all_demands_btn = QPushButton(
             text="Reset Demands", clicked=self.reset_all_demands
@@ -190,10 +197,16 @@ class TreeVisualizer(QWidget):
 
         # WIDGET LAYOUT
         self.main_v_layout = QVBoxLayout(self, margin=0)
-
+        self.canvas.setStyleSheet("background-color:transparent;");
+        #self.canvas.setWindowFlags(Qt.FramelessWindowHint);
         self.main_v_layout.addWidget(self.canvas)
 
+
         self.option_h_layout = QHBoxLayout(self, margin=self.layout_margins)
+
+        #add l1 button
+        self.option_h_layout.addWidget(self.l1_model_btn)
+
         #add network button
         self.option_h_layout.addWidget(self.network_info_btn)
         #add spaceing
@@ -361,7 +374,6 @@ class TreeVisualizer(QWidget):
                                 )
                         # get the node objects from the names
                         n1, n2 = node_dictionary[nodes[0]], node_dictionary[nodes[1]]
-
                         graph.add_vertex(
                             n1=n1,
                             n2=n2,
@@ -389,6 +401,9 @@ class TreeVisualizer(QWidget):
                 )
 
             # make sure that the UI is in order
+
+
+
             self.deselect_node()
             self.deselect_vertex()
             self.set_checkbox_values()
@@ -524,7 +539,12 @@ class TreeVisualizer(QWidget):
             #get new spf path
             demand = int(demand_value) * demand_unit_multiplicate
             #print(f'running deploy demand on source: {source} target:{target} with demand: {demand}')
-            self.graph.check_if_demand_exists_or_add(source_label,target_label,demand)
+            try:
+                self.graph.check_if_demand_exists_or_add(source_label,target_label,demand)
+            except Exception:
+                print('exception in main app when trying to deploy demand')
+            except Warning:
+                print('warning in main app when trying to deploy demand')
             #self.graph.add_demand(source=source_label,target=target_label,demand=demand)
 
     def network_info(self):
@@ -532,6 +552,10 @@ class TreeVisualizer(QWidget):
         self.ui = Ui_NetworkInfoForm()
         self.ui.setupUi(self.network_info,self.graph)
         self.network_info.show()
+
+    def l1_model(self):
+        self.l1_model = L1Model(self.graph)
+        self.l1_model.setWindowTitle("LnetD - L1 Model")
 
     def update_directed_toggle_button_text(self):
         #TODO remove
@@ -745,45 +769,8 @@ class TreeVisualizer(QWidget):
                     self.select_node(node)
                     self.deselect_vertex()
                 pass
-            #cmenu = QMenu(self)
-            #newAct = cmenu.addAction("New")
-            #opnAct = cmenu.addAction("Open")
-            #quitAct = cmenu.addAction("Quit")
-
-
             pass
-            #TODO , bring up a contextmenu with Link UP/DOWN , Node UP/DOWN
-            #bring up the menu
-            '''
-            self.dialog = QDialog()
-            self.dialog.ui = Ui_MyDialog()
-            self.dialog.ui.setupUi(self.dialog)
-            self.dialog.show()
-            #self.add_node = AddNode(pos)
-            #self.add_node.show()
-            if pressed_node is not None:
-                if (
-                    self.selected_node is not None
-                    and pressed_node is not self.selected_node
-                ):
-                    self.graph.toggle_vertex(self.selected_node, pressed_node)
-                else:
-                    self.graph.remove_node(pressed_node)
-                    self.deselect_node()
 
-            elif pressed_vertex is not None:
-                self.graph.remove_vertex(*pressed_vertex)
-                self.deselect_vertex()
-            else:
-                node = self.graph.add_node(pos, self.node_radius)
-
-                # if a selected node exists, connect it to the newly created node
-                if self.selected_node is not None:
-                    self.graph.add_vertex(self.selected_node, node)
-
-                self.select_node(node)
-                self.deselect_vertex()
-            '''
 
     def mouseReleaseEvent(self, event):
         """Is called when a mouse button is released; stops node drag."""
@@ -906,7 +893,7 @@ class TreeVisualizer(QWidget):
         painter.setRenderHint(QPainter.Antialiasing, True)
 
         painter.setPen(QPen(Qt.black, Qt.SolidLine))
-        #painter.setBrush(QBrush(Qt.lightGray, Qt.SolidPattern))
+        painter.setBrush(QBrush(Qt.lightGray, Qt.SolidPattern))
 
         painter.setClipRect(0, 0, self.canvas.width(), self.canvas.height())
 
@@ -1210,10 +1197,23 @@ class TreeVisualizer(QWidget):
 app = QApplication(sys.argv)
 
 #TODO add some nice css
-#import qdarkstyle
+import qdarkstyle
 #app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
-app.setStyleSheet("QMainWindow{background-color: gray} QFrame { border: 1px solid black } ")
+
+app.setStyleSheet("""QMainWindow{background-color: gray}
+                   QFrame { border: 1px solid black }
+                   QTabWidget::pane { border: 0; }
+                 """)
+
+#app.setStyle("Fusion")
 
 #app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+#print(app.styleSheet())
+
+#f = open("style.css","w+")
+#f.write(app.styleSheet())
+with open('style.css', 'r') as file:
+    data = file.read()
+app.setStyleSheet(data)
 ex = TreeVisualizer()
 sys.exit(app.exec_())
