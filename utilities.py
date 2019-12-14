@@ -284,3 +284,4 @@ def generate_link_number(lnetd_links):
             lnetd_links[i]['linknum'] = 1;
         i = i+1
     return lnetd_links
+

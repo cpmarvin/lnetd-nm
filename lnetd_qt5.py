@@ -10,7 +10,7 @@ import ast
 
 # PyQt5
 
-from PyQt5.QtCore import Qt, QSize, QTimer, QPointF, QRectF, QMetaObject, QRect , QCoreApplication, QPoint, QLineF
+from PyQt5.QtCore import Qt, QSize, QTimer, QPointF, QRectF, QMetaObject, QRect , QCoreApplication, QPoint, QLineF ,pyqtSlot
 from PyQt5.QtGui import QPainter, QBrush, QPen, QFont, QIcon, QTransform, QPalette, QColor
 from PyQt5.QtWidgets import (
     QApplication,
@@ -31,7 +31,8 @@ from PyQt5.QtWidgets import (
     QLabel,
     QSpacerItem,
     QMainWindow,
-    QMenuBar
+    QMenuBar,
+    QOpenGLWidget
 )
 
 # graph stuff
@@ -51,7 +52,11 @@ from dialogs.edit_label import Ui_EditLabel
 from dialogs.change_name import Ui_ChangeName
 from dialogs.add_link import Ui_AddLink
 
+
+import OpenGL.GL as gl
+
 class TreeVisualizer(QWidget):
+
     def __init__(self):
         """Initial configuration."""
         super().__init__()
@@ -100,8 +105,10 @@ class TreeVisualizer(QWidget):
 
         # TIMERS
         # timer that runs the simulation (60 times a second... once every ~= 16ms)
+        #16 too high for paint, move to 60 for now
+        #TODO fix the math in self.update() -> paint
         self.simulation_timer = QTimer(
-            interval=16, timeout=self.perform_simulation_iteration
+            interval=60, timeout=self.perform_simulation_iteration
         )
 
         # WIDGETS
@@ -129,6 +136,7 @@ class TreeVisualizer(QWidget):
             text="weighted", clicked=self.set_weighted_graph
         )
 
+        self.demand_warning = QCheckBox(text="Demand Warning", checked=False)
         # enables/disables forces (True by default - they're fun!)
         self.forces_checkbox = QCheckBox(text="forces", checked=False)
 
@@ -143,19 +151,19 @@ class TreeVisualizer(QWidget):
 
         self.input_line_source = QLineEdit(
             enabled=self.labels_checkbox.isChecked(),
-            textChanged=self.input_line_edit_changed,
+            #textChanged=self.input_line_edit_changed,
             placeholderText = "Source"
         )
 
         self.input_line_target = QLineEdit(
             enabled=self.labels_checkbox.isChecked(),
-            textChanged=self.input_line_edit_changed,
+            #textChanged=self.input_line_edit_changed,
             placeholderText = "Target"
         )
 
         self.input_line_demand = QLineEdit(
             enabled=self.labels_checkbox.isChecked(),
-            textChanged=self.input_line_edit_changed,
+            #textChanged=self.input_line_edit_changed,
             placeholderText = "Demand in Mbps"
         )
 
@@ -166,8 +174,8 @@ class TreeVisualizer(QWidget):
 
         # run deploy demand based on source and target if they are set
         self.spf_button = QPushButton(
-            text="Deploy Demand",
-            clicked=self.run_spf,
+            text="Add Demand",
+            clicked=self.deploy_static_demand,
         )
         # displays information about the app
         self.about_button = QPushButton(
@@ -192,13 +200,10 @@ class TreeVisualizer(QWidget):
         # Load
         self.import_netflow_button = QPushButton(text="Load Demands", clicked=self.load_netflow_demands)
 
-        #load by default
-        #self.import_graph_lnetd()
-
         # WIDGET LAYOUT
+
         self.main_v_layout = QVBoxLayout(self, margin=0)
-        self.canvas.setStyleSheet("background-color:transparent;");
-        #self.canvas.setWindowFlags(Qt.FramelessWindowHint);
+        #self.canvas.setStyleSheet("background-color:transparent;");
         self.main_v_layout.addWidget(self.canvas)
 
 
@@ -214,20 +219,24 @@ class TreeVisualizer(QWidget):
         #add reset demands button
         self.option_h_layout.addWidget(self.reset_all_demands_btn)
         #remove at this stage , graph is always weighted
-        #self.option_h_layout.addWidget(self.weighted_checkbox)
+
         self.option_h_layout.addSpacing(self.layout_item_spacing)
         #add check for labels
         self.option_h_layout.addWidget(self.labels_checkbox)
         self.option_h_layout.addSpacing(self.layout_item_spacing)
+
+        self.option_h_layout.addWidget(self.demand_warning)
         #add check for forces
-        self.option_h_layout.addWidget(self.forces_checkbox)
+        #self.option_h_layout.addWidget(self.forces_checkbox)
         self.option_h_layout.addSpacing(self.layout_item_spacing)
         #add line edit for nodes/links label info
         self.option_h_layout.addWidget(self.input_line_edit)
 
+
+
         #add another box for demand
         self.demand_h_layout = QHBoxLayout(self, margin=self.layout_margins)
-        self.demand_h_layout.addSpacing(self.layout_item_spacing)
+        #self.demand_h_layout.addSpacing(self.layout_item_spacing)
         #SPF Source
         self.demand_h_layout.addWidget(self.input_line_source)
         #SPF Target
@@ -265,9 +274,10 @@ class TreeVisualizer(QWidget):
         self.setLayout(self.main_v_layout)
 
         # WINDOW SETTINGS
-        self.setWindowTitle("LnetD")
+        self.setWindowTitle("LnetD(qt) - Network Model")
         self.setFont(QFont(self.font_family, self.font_size))
         self.setWindowIcon(QIcon("icon.ico"))
+        self.setWindowFlags(Qt.Dialog)
         self.show()
 
         # start the simulation
@@ -389,7 +399,8 @@ class TreeVisualizer(QWidget):
 
             except UnicodeDecodeError:
                 QMessageBox.critical(self, "Error!", "Can't read binary files!")
-            except ValueError:
+            except ValueError as e:
+                #print(e)
                 QMessageBox.critical(
                     self, "Error!", "The weights of the graph are not numbers!"
                 )
@@ -401,9 +412,6 @@ class TreeVisualizer(QWidget):
                 )
 
             # make sure that the UI is in order
-
-
-
             self.deselect_node()
             self.deselect_vertex()
             self.set_checkbox_values()
@@ -422,6 +430,8 @@ class TreeVisualizer(QWidget):
                         target = demand['target']
                         demand_value = int(demand['demand'])
                         self.graph.add_demand(source=source,target=target,demand=demand_value)
+                    self.demand_report()
+                    #self.graph.redeploy_demands()
             except UnicodeDecodeError:
                 QMessageBox.critical(self, "Error!", "Can't read binary files!")
             except ValueError:
@@ -429,7 +439,7 @@ class TreeVisualizer(QWidget):
                         self, "Error!", "The demand file cannot be imported!"
                     )
             except Exception as e:
-                print('this is the error when importing netflow', e)
+                #print('this is the error when importing netflow', e)
                 QMessageBox.critical(
                         self,
                         "Error!",
@@ -441,8 +451,9 @@ class TreeVisualizer(QWidget):
         pass
 
     def set_checkbox_values(self):
+        pass
         """Sets the values of the checkboxes from the graph."""
-        self.weighted_checkbox.setChecked(self.graph.is_weighted())
+        #self.weighted_checkbox.setChecked(self.graph.is_weighted())
         #self.update_directed_toggle_button_text()
 
     def export_graph(self):
@@ -493,11 +504,14 @@ class TreeVisualizer(QWidget):
 
         QMessageBox.information(self, "About", message)
 
-    def run_spf(self):
+    #@catch_exception
+    def deploy_static_demand(self):
         """This is infact deploy demands"""
         #TODO change name and redo
         source_label = self.input_line_source.text()
+        source_node = self.graph.get_node_based_on_label(source_label)
         target_label = self.input_line_target.text()
+        target_node = self.graph.get_node_based_on_label(target_label)
         demand_value = self.input_line_demand.text()
         demand_unit_text = self.demand_unit_select.currentText()
         if demand_unit_text =='Mbps':
@@ -512,6 +526,7 @@ class TreeVisualizer(QWidget):
         can_spf_be_ran = False
         if source_label in graph_nodes and target_label in graph_nodes and source_label != target_label and len(demand_value) > 0:
             can_spf_be_ran = True
+
         else:
             palette = self.input_line_source.palette()
             palette.setColor(self.input_line_source.backgroundRole(), Qt.red)
@@ -529,24 +544,23 @@ class TreeVisualizer(QWidget):
             palette = self.input_line_target.palette()
             palette.setColor(self.input_line_target.backgroundRole(), Qt.white)
             self.input_line_target.setPalette(palette)
-            #source = self.graph.get_node_based_on_label(source_label)
-            #target = self.graph.get_node_based_on_label(target_label)
-            #reset existing spf path and demands if not additive
             if not self.additive_checkbox.isChecked():
-                #print(self.additive_checkbox.isChecked())
                 self.graph.remove_all_demands()
-                #self.graph.reset_spf(demand=True)
             #get new spf path
             demand = int(demand_value) * demand_unit_multiplicate
-            #print(f'running deploy demand on source: {source} target:{target} with demand: {demand}')
-            try:
-                self.graph.check_if_demand_exists_or_add(source_label,target_label,demand)
-            except Exception:
-                print('exception in main app when trying to deploy demand')
-            except Warning:
-                print('warning in main app when trying to deploy demand')
-            #self.graph.add_demand(source=source_label,target=target_label,demand=demand)
+            self.graph.add_demand(source_label,target_label,demand)
+            #self.graph.redeploy_demands()
+            self.demand_report()
 
+
+    def demand_report(self):
+        self.graph.redeploy_demands()
+        if self.demand_warning.isChecked():
+            if len(self.graph.get_unrouted_demands()) > 0:
+                message = "there are demands that cannot be deployed in the current model"
+                QMessageBox.information(self, "About", message)
+        else:
+            pass
     def network_info(self):
         self.network_info = QWidget()
         self.ui = Ui_NetworkInfoForm()
@@ -555,7 +569,7 @@ class TreeVisualizer(QWidget):
 
     def l1_model(self):
         self.l1_model = L1Model(self.graph)
-        self.l1_model.setWindowTitle("LnetD - L1 Model")
+        self.l1_model.update_demands.connect(self.demand_report)
 
     def update_directed_toggle_button_text(self):
         #TODO remove
@@ -626,17 +640,12 @@ class TreeVisualizer(QWidget):
         self.input_line_edit.setText(str(vertex[2]))
         self.input_line_edit.setEnabled(True)
         self.input_line_edit.setFocus()
-        #bring up the link_info window
-        self.link_info = QWidget()
-        self.link_info.ui = Ui_link_info()
-        self.link_info.ui.setupUi(self.link_info,vertex[3])
-        self.link_info.show()
 
 
     def deselect_vertex(self):
         """Sets the selected vertex to None and disables the input line edit."""
         self.selected_vertex = None
-        self.input_line_edit.setEnabled(False)
+        #self.input_line_edit.setEnabled(False)
 
     def mousePressEvent(self, event):
         """Is called when a mouse button is pressed; creates and moves
@@ -653,22 +662,22 @@ class TreeVisualizer(QWidget):
         # (potentially) find a node that has been pressed
         pressed_node = None
         for node in self.graph.get_nodes():
+
             if distance(pos, node.get_position()) <= node.get_radius():
                 pressed_node = node
 
         # (potentially) find a vertex that has been pressed
         pressed_vertex = None
-        #print('this is the vertex_positions',self.vertex_positions)
+
 
         for vertex in self.vertex_positions:
-            #print('this is the abs 1', abs(vertex[0][0] - pos[0]) )
-            #print('this is the abs 1', abs(vertex[0][1] - pos[1]) )
+
             if (
                 # TODO: finish the selecting of vertices
                 #abs(vertex[0][0] - pos[0]) < self.weight_rectangle_size
                 #and abs(vertex[0][1] - pos[1]) < self.weight_rectangle_size
-                abs(vertex[0][0] - pos[0]) < 1
-                and abs(vertex[0][1] - pos[1]) < 1
+                abs(vertex[0][0] - pos[0]) < 3 #diff try with 3
+                and abs(vertex[0][1] - pos[1]) < 3 #diff try with 3
             ):
 
                 #pressed_vertex = vertex[1]
@@ -694,78 +703,76 @@ class TreeVisualizer(QWidget):
         elif event.button() == Qt.RightButton:
             cmenu = QMenu(self)
             if pressed_node is not None:
-                #print('node is note node',type(pressed_node))
                 if pressed_node._failed:
                     unfail_node = cmenu.addAction("Node UP")
                 else:
                     fail_node = cmenu.addAction("Node DOWN")
 
-                node_information = cmenu.addAction("Node Info")
-                delete_node = cmenu.addAction("Delete Node")
-                add_link = cmenu.addAction("Add Link")
                 change_name = cmenu.addAction("Change Name")
+                delete_node = cmenu.addAction("Delete Node")
+                add_link = cmenu.addAction("Add Interface")
                 action = cmenu.exec_(self.mapToGlobal(event.pos()))
-                if action == node_information:
-                    print('node information')
-                    pass
-                elif action == add_link:
+                if action == add_link:
                     self.add_link = QWidget()
+                    self.add_link.setWindowFlags(Qt.Dialog)
                     self.add_link.ui = Ui_AddLink()
-                    self.add_link.ui.setupUi(self.add_link,pressed_node,self.graph)
+                    self.add_link.ui.setupUi(self.add_link, pressed_node, self.graph)
+                    self.add_link.ui.update_demands.connect(self.demand_report)
                     self.add_link.show()
                 elif action == change_name:
                     self.change_name = QWidget()
+                    self.change_name.setWindowFlags(Qt.Tool) #tool so far
                     self.change_name.ui = Ui_ChangeName()
                     self.change_name.ui.setupUi(self.change_name,pressed_node,self.graph)
+                    self.change_name.ui.update_demands.connect(self.demand_report)
                     self.change_name.show()
-                    pass
                 elif action == delete_node:
                     self.graph.remove_node(pressed_node)
+                    self.demand_report()
                     self.deselect_node()
-
                 elif not pressed_node._failed and action == fail_node:
                     pressed_node.failNode()
-                    self.graph.redeploy_demands()
+                    self.demand_report()
                 elif pressed_node._failed and action == unfail_node:
                     pressed_node.unfailNode()
-                    self.graph.redeploy_demands()
+                    self.demand_report()
             elif pressed_vertex is not None:
-                #print('node is note node',pressed_vertex)
                 if pressed_vertex[3]._failed:
-                    unfail_link = cmenu.addAction("Link UP")
+                    unfail_link = cmenu.addAction("Interface UP")
                 else:
-                    fail_link = cmenu.addAction("Link DOWN")
-                link_information = cmenu.addAction("Link Info")
-                change_metric = cmenu.addAction("Change Link Metric")
+                    fail_link = cmenu.addAction("Interface DOWN")
+                link_information = cmenu.addAction("Interface Info")
+                change_metric = cmenu.addAction("Change Metric")
                 delete_interface = cmenu.addAction("Delete Interface")
                 action = cmenu.exec_(self.mapToGlobal(event.pos()))
                 if action == link_information:
-                    #bring up the link_info window
                     self.link_info = QWidget()
+                    self.link_info.setWindowFlags(Qt.Dialog)
                     self.link_info.ui = Ui_link_info()
                     self.link_info.ui.setupUi(self.link_info,pressed_vertex[3])
                     self.link_info.show()
                 elif action == change_metric:
                     self.change_metric = QWidget()
+                    self.change_metric.setWindowFlags(Qt.Dialog)
                     self.change_metric.ui = Ui_EditLabel()
                     self.change_metric.ui.setupUi(self.change_metric,pressed_vertex[3],self.graph)
+                    self.change_metric.ui.update_demands.connect(self.demand_report)
                     self.change_metric.show()
                 elif not pressed_vertex[3]._failed and action == fail_link:
                     pressed_vertex[3].failInterface()
-                    self.graph.redeploy_demands()
+                    self.demand_report()
                 elif pressed_vertex[3]._failed and action == unfail_link:
                     pressed_vertex[3].unfailInterface()
-                    self.graph.redeploy_demands()
+                    self.demand_report()
                 elif action == delete_interface:
                     self.graph.remove_interface(pressed_vertex[3])
-                #select_vertex
+                    self.demand_report()
+
             else:
                 add_node_action = cmenu.addAction("Add Node")
                 action = cmenu.exec_(self.mapToGlobal(event.pos()))
                 if action == add_node_action:
-                    print("add node",pos)
                     node = self.graph.add_node(pos, self.node_radius)
-                    node._failed = True
                     self.select_node(node)
                     self.deselect_vertex()
                 pass
@@ -835,6 +842,7 @@ class TreeVisualizer(QWidget):
     def perform_simulation_iteration(self):
         """Performs one iteration of the simulation."""
         # evaluate forces that act upon each pair of nodes
+
         for i, n1 in enumerate(self.graph.get_nodes()):
             for j, n2 in enumerate(self.graph.get_nodes()[i + 1 :]):
                 # if they are not in the same component, no forces act on them
@@ -884,31 +892,33 @@ class TreeVisualizer(QWidget):
                     ):
                         node.set_position(node.get_position() + pos_delta)
 
-        self.update()
+        self.canvas.update()
+        #self.repaint()
 
-    def paintEvent(self, event):
+    def paintEvent(self,event):
+
         """Paints the board."""
         painter = QPainter(self)
 
         painter.setRenderHint(QPainter.Antialiasing, True)
 
         painter.setPen(QPen(Qt.black, Qt.SolidLine))
-        painter.setBrush(QBrush(Qt.lightGray, Qt.SolidPattern))
+        #painter.setBrush(QBrush(Qt.lightGray, Qt.SolidPattern))
 
         painter.setClipRect(0, 0, self.canvas.width(), self.canvas.height())
 
         # background
-        #painter.drawRect(0, 0, self.canvas.width(), self.canvas.height())
+        painter.drawRect(0, 0, self.canvas.width(), self.canvas.height())
 
         painter.translate(*self.translation)
         painter.scale(self.scale, self.scale)
 
-        # if the graph is weighted, reset the positions, since they will be re-drawn
-        # later on
-        # No need , graph is always weighted // REMOVE if self.graph.is_weighted():
+
         self.vertex_positions = []
 
         # draw vertices; has to be drawn before nodes, so they aren't drawn on top
+        # can this cause CPU spikes ?
+
         for n1 in self.graph.get_nodes():
             for entry in n1.get_interfaces():
                 #print('paint event entry:',entry)
@@ -934,10 +944,7 @@ class TreeVisualizer(QWidget):
                     link_color = Qt.magenta
                 else:
                     link_color = Qt.gray
-                '''
-                if entry.local_ip == '10.111.13.11':
-                    print(util,link_color)
-                '''
+
                 import math
                 n1_p = Vector(*n1.get_position())
                 n2_p = Vector(*n2.get_position())
@@ -969,6 +976,7 @@ class TreeVisualizer(QWidget):
                 #set the new coordinates for line start and end points taking into accound the offset for each
                 n1_p = Vector(d0x,d0y)
                 n2_p = Vector(endX,endY)
+
                 # create a unit vector from the first to the second node
                 uv = (n2_p - n1_p).unit()
                 #print('this is the uv',uv)
@@ -977,186 +985,142 @@ class TreeVisualizer(QWidget):
                 d = distance(n1_p, n2_p)
                 r = n2.get_radius()
 
-                # if it's directed, draw the head of the arrow
-                if self.graph.is_directed():
+                #draw arrow position
+                arrow_head_pos = n2_p #n1_p + uv * (d - r)
 
-                    # in case there is a vertex going the other way, we will move the
-                    # line up the circles by an angle, so there is separation between
-                    # the vertices
-                    '''
-                    if self.graph.does_vertex_exist(n2, n1):
-                        # TODO: figure out what this does
-                        calulated_value = Vector(
-                                -uv[1] * sin(self.arrow_separation)
-                                + uv[0] * (1 - cos(self.arrow_separation)),
-                                uv[0] * sin(self.arrow_separation)
-                                + uv[1] * (1 - cos(self.arrow_separation)),
-                            ) *r
-                        #print('this is the calculated value' ,calulated_value)
-                        nv = (
-                            Vector(
-                                -uv[1] * sin(self.arrow_separation)
-                                + uv[0] * (1 - cos(self.arrow_separation)),
-                                uv[0] * sin(self.arrow_separation)
-                                + uv[1] * (1 - cos(self.arrow_separation)),
-                            )
-                            * r
+                # calculate the two remaining points of the arrow; this is done the
+                # same way as the previous calculation (shift by vector)
+                d = distance(n1_p, arrow_head_pos)
+                uv_arrow = (arrow_head_pos - n1_p).unit()
+
+                # position of the base of the arrow
+                arrow_base_pos = n1_p + uv_arrow * (d - self.arrowhead_size * 2)
+
+                # the normal vectors to the unit vector of the arrow head
+                nv_arrow = uv_arrow.rotated(pi / 2)
+
+                # draw the tip of the arrow, as the triangle
+
+                painter.setBrush(QBrush(Qt.black, Qt.SolidPattern))
+                painter.drawPolygon(
+                    QPointF(*arrow_head_pos),
+                    QPointF(*(arrow_base_pos + nv_arrow * self.arrowhead_size)),
+                    QPointF(*(arrow_base_pos - nv_arrow * self.arrowhead_size)),
+                )
+
+
+                painter.setPen(QPen(link_color, Qt.SolidLine))
+
+                painter.drawLine(QPointF(d0x,d0y),QPointF(endX,endY))
+                link_paint = QLineF(QPointF(d0x,d0y), QPointF(endX,endY))
+
+                # the position of the head of the arrow
+                arrow_head_pos = n2_p #n1_p + uv * (d - r)
+
+                # calculate the two remaining points of the arrow; this is done the
+                # same way as the previous calculation (shift by vector)
+                d = distance(n1_p, arrow_head_pos)
+                uv_arrow = (arrow_head_pos - n1_p).unit()
+
+                # position of the base of the arrow
+                arrow_base_pos = n1_p + uv_arrow * (d - self.arrowhead_size * 2)
+
+                # the normal vectors to the unit vector of the arrow head
+                nv_arrow = uv_arrow.rotated(pi / 2)
+
+                # draw the tip of the arrow, as the triangle
+                painter.setBrush(QBrush(link_color, Qt.SolidPattern))
+                painter.drawPolygon(
+                    QPointF(*arrow_head_pos),
+                    QPointF(*(arrow_base_pos + nv_arrow * self.arrowhead_size)),
+                    QPointF(*(arrow_base_pos - nv_arrow * self.arrowhead_size)),
+                )
+
+                if self.graph:
+                    #calculate mid point of the link where to place the label
+                    mid = (arrow_base_pos + n1_p) /2
+
+                    # if the graph is directed, the vertices are offset (so they
+                    # aren't draw on top of each other), so we need to shift them
+                    # back to be at the midpoint between the nodes
+                    if self.graph.is_directed():
+                        mid -= uv * r * (1 - cos(self.arrow_separation))
+
+                    r = self.weight_rectangle_size
+
+                    self.vertex_positions.append((mid, (n1, n2), weight, entry))
+                    #print('self.selected_vertex',self.selected_vertex)
+
+                    # make the selected vertex rectangle background different, if
+                    # it's selected (for aesthetics)
+
+                    if (
+                        self.selected_vertex is not None
+                        and n1 is self.selected_vertex[1][0]
+                        and n2 is self.selected_vertex[1][1]
+                        and self.selected_vertex == weight
+                    ):
+                        painter.setBrush(
+                            QBrush(Qt.black, Qt.SolidPattern)
                         )
-                        #print('n1_p before',n1_p)
-                        #n1_p += nv
-                        #n2_p += nv
-                        #n1_p = Vector(d0x,d0y)
-                        #n2_p = Vector(endX,endY)
-                    '''
-                    # the position of the head of the arrow
-                    arrow_head_pos = n2_p #n1_p + uv * (d - r)
-
-                    # calculate the two remaining points of the arrow; this is done the
-                    # same way as the previous calculation (shift by vector)
-                    d = distance(n1_p, arrow_head_pos)
-                    uv_arrow = (arrow_head_pos - n1_p).unit()
-
-                    # position of the base of the arrow
-                    arrow_base_pos = n1_p + uv_arrow * (d - self.arrowhead_size * 2)
-
-                    # the normal vectors to the unit vector of the arrow head
-                    nv_arrow = uv_arrow.rotated(pi / 2)
-                    #'''
-                    # draw the tip of the arrow, as the triangle
-                    painter.setBrush(QBrush(Qt.black, Qt.SolidPattern))
-                    painter.drawPolygon(
-                        QPointF(*arrow_head_pos),
-                        QPointF(*(arrow_base_pos + nv_arrow * self.arrowhead_size)),
-                        QPointF(*(arrow_base_pos - nv_arrow * self.arrowhead_size)),
-                    )
-                    #'''
-
-                # draw only one of the two vertices, if the graph is undirected
-                if self.graph.is_directed() or id(n1) < id(n2):
-                    #painter.drawLine(QPointF(*n1_p), QPointF(*n2_p))
-                    #draw the line between n1_p and the arrow_base_pos
-                    #as the arrow_base_pos is middle of the line
-                    #painter.drawLine(QPointF(*n1_p),QPointF(*arrow_base_pos))
-
-                    #<309.40683844801885, 188.3109590533766>
-                    #color link based on util
-                    painter.setPen(QPen(link_color, Qt.SolidLine))
-
-                    painter.drawLine(QPointF(d0x,d0y),QPointF(endX,endY))
-                    link_paint = QLineF(QPointF(d0x,d0y), QPointF(endX,endY))
-
-
-
-                    # the position of the head of the arrow
-                    arrow_head_pos = n2_p #n1_p + uv * (d - r)
-
-                    # calculate the two remaining points of the arrow; this is done the
-                    # same way as the previous calculation (shift by vector)
-                    d = distance(n1_p, arrow_head_pos)
-                    uv_arrow = (arrow_head_pos - n1_p).unit()
-
-                    # position of the base of the arrow
-                    arrow_base_pos = n1_p + uv_arrow * (d - self.arrowhead_size * 2)
-
-                    # the normal vectors to the unit vector of the arrow head
-                    nv_arrow = uv_arrow.rotated(pi / 2)
-                    #'''
-                    # draw the tip of the arrow, as the triangle
-                    painter.setBrush(QBrush(link_color, Qt.SolidPattern))
-                    painter.drawPolygon(
-                        QPointF(*arrow_head_pos),
-                        QPointF(*(arrow_base_pos + nv_arrow * self.arrowhead_size)),
-                        QPointF(*(arrow_base_pos - nv_arrow * self.arrowhead_size)),
-                    )
-
-                    if self.graph.is_weighted():
-                        #mid = (n2_p + n1_p) / 2
-                        #calculate mid point of the link where to place the label
-                        mid = (arrow_base_pos + n1_p) /2
-
-                        # if the graph is directed, the vertices are offset (so they
-                        # aren't draw on top of each other), so we need to shift them
-                        # back to be at the midpoint between the nodes
-                        if self.graph.is_directed():
-                            mid -= uv * r * (1 - cos(self.arrow_separation))
-
-                        r = self.weight_rectangle_size
-
-                        self.vertex_positions.append((mid, (n1, n2), weight, entry))
-                        #print('self.selected_vertex',self.selected_vertex)
-
-                        # make the selected vertex rectangle background different, if
-                        # it's selected (for aesthetics)
-
-                        if (
-                            self.selected_vertex is not None
-                            and n1 is self.selected_vertex[1][0]
-                            and n2 is self.selected_vertex[1][1]
-                            and self.selected_vertex == weight
-                        ):
-                            painter.setBrush(
-                                QBrush(Qt.black, Qt.SolidPattern)
+                        painter.setPen(QPen(Qt.black, Qt.SolidLine))
+                    else:
+                        painter.setBrush(
+                            QBrush(
+                                Qt.black, Qt.SolidPattern
                             )
-                            painter.setPen(QPen(Qt.black, Qt.SolidLine))
+                        )
+                        painter.setPen(QPen(Qt.black, Qt.SolidLine))
+
+                    # the text rectangle
+                    w_len = len(str(weight)) / 3 * r + r / 3
+                    weight_v = Vector(r if w_len <= r else w_len, r)
+                    weight_rectangle = QRectF(*(mid - weight_v), *(2 * weight_v))
+                    #Vector(lenght,height)
+                    weight_v = Vector(w_len,2)
+                    weight_rectangle = QRectF(*(mid - weight_v), *(2 * weight_v))
+
+                    #the text is still upside down but rotation is fine now
+                    is_fixed = True
+
+                    if is_fixed :
+                        painter.save()
+                        if endX - d0x > 0:
+                            link_paint = QLineF(QPointF(d0x,d0y), QPointF(endX,endY))
                         else:
-                            painter.setBrush(
-                                QBrush(
-                                    Qt.black, Qt.SolidPattern
-                                )
-                            )
-                            painter.setPen(QPen(Qt.black, Qt.SolidLine))
+                            link_paint = QLineF(QPointF(endX,endY), QPointF(d0x,d0y))
 
-                        # the text rectangle
-                        w_len = len(str(weight)) / 3 * r + r / 3
-                        weight_v = Vector(r if w_len <= r else w_len, r)
-                        weight_rectangle = QRectF(*(mid - weight_v), *(2 * weight_v))
-                        #Vector(lenght,height)
-                        weight_v = Vector(w_len,2)
-                        weight_rectangle = QRectF(*(mid - weight_v), *(2 * weight_v))
+                        center_of_rec_x = weight_rectangle.center().x()
+                        #center_of_rec_x = link_paint.center().x()
+                        center_of_rec_y  = weight_rectangle.center().y()
+                        #center_of_rec_y = link_paint.center().y()
 
-                        #the text is still upside down but rotation is fine now
-                        is_fixed = True
-
-                        if is_fixed :
-                            painter.save()
-                            if endX - d0x > 0:
-                                link_paint = QLineF(QPointF(d0x,d0y), QPointF(endX,endY))
-                            else:
-                                link_paint = QLineF(QPointF(endX,endY), QPointF(d0x,d0y))
-
-                            center_of_rec_x = weight_rectangle.center().x()
-                            #center_of_rec_x = link_paint.center().x()
-                            center_of_rec_y  = weight_rectangle.center().y()
-                            #center_of_rec_y = link_paint.center().y()
-
-                            painter.translate(center_of_rec_x, center_of_rec_y)
+                        painter.translate(center_of_rec_x, center_of_rec_y)
 
 
-                            rx = -(weight_v[0] * 0.5)
-                            ry = -(weight_v[1] )
+                        rx = -(weight_v[0] * 0.5)
+                        ry = -(weight_v[1] )
 
 
-                            painter.rotate(- link_paint.angle());
-                            new_rec = QRect(rx , ry, weight_v[0], 2 * weight_v[1])
-                            painter.drawRect(QRect(rx , ry, weight_v[0] , 2 * weight_v[1] ))
-                            painter.setFont(QFont(self.font_family, self.font_size / 3))
-                            #painter.resetTransform()
-                            #painter.restore()
-                            painter.setPen(QPen(Qt.white, Qt.SolidLine))
-                            #print(new_rec.center().x())
-                            #print(dir(painter))
-                            #print('this is the metruc in draw text',weight)
-                            painter.drawText(new_rec, Qt.AlignCenter, str(weight))
-                            #painter.drawText(ry,rx,str(weight))
-                            painter.restore()
-                            painter.setPen(QPen(Qt.black, Qt.SolidLine))
-                            painter.setFont(QFont(self.font_family, self.font_size / 3))
-                        else:
-                            painter.drawRect(weight_rectangle)
-                            painter.setFont(QFont(self.font_family, self.font_size / 3))
-                            painter.setPen(QPen(Qt.white, Qt.SolidLine))
-                            painter.drawText(weight_rectangle, Qt.AlignCenter, str(weight))
-                            painter.setPen(QPen(Qt.black, Qt.SolidLine))
+                        painter.rotate(- link_paint.angle());
+                        new_rec = QRect(rx , ry, weight_v[0], 2 * weight_v[1])
+                        painter.drawRect(QRect(rx , ry, weight_v[0] , 2 * weight_v[1] ))
+                        painter.setFont(QFont(self.font_family, self.font_size / 3))
+
+                        painter.setPen(QPen(Qt.white, Qt.SolidLine))
+
+                        painter.drawText(new_rec, Qt.AlignCenter, str(weight))
+                        #painter.drawText(ry,rx,str(weight))
+                        painter.restore()
+                        painter.setPen(QPen(Qt.black, Qt.SolidLine))
+                        painter.setFont(QFont(self.font_family, self.font_size / 3))
+                    else:
+                        painter.drawRect(weight_rectangle)
+                        painter.setFont(QFont(self.font_family, self.font_size / 3))
+                        painter.setPen(QPen(Qt.white, Qt.SolidLine))
+                        painter.drawText(weight_rectangle, Qt.AlignCenter, str(weight))
+                        painter.setPen(QPen(Qt.black, Qt.SolidLine))
+
 
         # draw nodes
         for node in self.graph.get_nodes():
@@ -1175,7 +1139,6 @@ class TreeVisualizer(QWidget):
             )
 
             node_position = node.get_position()
-            #print(node_position)
             node_radius = Vector(node.get_radius()).repeat(2)
 
             painter.drawEllipse(QPointF(*node_position), *node_radius)
@@ -1197,23 +1160,18 @@ class TreeVisualizer(QWidget):
 app = QApplication(sys.argv)
 
 #TODO add some nice css
-import qdarkstyle
+#import qdarkstyle
 #app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
-
-app.setStyleSheet("""QMainWindow{background-color: gray}
-                   QFrame { border: 1px solid black }
-                   QTabWidget::pane { border: 0; }
-                 """)
-
 #app.setStyle("Fusion")
 
 #app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
 #print(app.styleSheet())
 
-#f = open("style.css","w+")
+#f = open("style.css1","w+")
 #f.write(app.styleSheet())
 with open('style.css', 'r') as file:
     data = file.read()
 app.setStyleSheet(data)
 ex = TreeVisualizer()
 sys.exit(app.exec_())
+

@@ -14,3 +14,4 @@ class Demand:
         self.source = source
         self.target = target
         self.demand = demand
+        self.unrouted = False

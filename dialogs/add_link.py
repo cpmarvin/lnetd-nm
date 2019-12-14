@@ -8,7 +8,9 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-class Ui_AddLink(object):
+class Ui_AddLink(QtCore.QObject):
+    update_demands = QtCore.pyqtSignal(str)
+
     def add_link(self):
         node1 = self.n1
         node2 = self.graph.get_node_based_on_label(self.target_txt.text())
@@ -34,7 +36,7 @@ class Ui_AddLink(object):
             self.graph.add_vertex(n1=node2, n2=node1, metric=metric,util=0,local_ip=remote_ip,remote_ip=local_ip,capacity=capacity)
             self.graph.update_linknum(node1,node2)
             self.graph.update_linknum(node2,node1)
-            self.graph.redeploy_demands()
+            self.update_demands.emit('oh well run the reports if you must')
 
 
     def setupUi(self, AddLink,n1,graph):

@@ -22,7 +22,7 @@ class Ui_NetworkInfoForm(object):
     def load_demands(self):
         self.DemandTable.setRowCount(0)
         #TODO fix this , should be dynamic
-        self.DemandTable.setHorizontalHeaderLabels(['Source', 'Target', 'Demand (Mbps)',])
+        self.DemandTable.setHorizontalHeaderLabels(['Source', 'Target', 'Demand (Mbps)','Fail to Deploy'])
 
         for row_number , row_data in enumerate(self.graph.demands):
             self.DemandTable.insertRow(row_number)
@@ -69,7 +69,7 @@ class Ui_NetworkInfoForm(object):
         self.DemandTable.setGridStyle(QtCore.Qt.DashDotLine)
         self.DemandTable.setWordWrap(False)
         self.DemandTable.setRowCount(3)
-        self.DemandTable.setColumnCount(3)
+        self.DemandTable.setColumnCount(4)
         self.DemandTable.setObjectName("DemandTable")
         self.DemandTable.horizontalHeader().setVisible(True)
         self.DemandTable.horizontalHeader().setCascadingSectionResizes(True)
@@ -158,7 +158,7 @@ class Ui_NetworkInfoForm(object):
 
     def retranslateUi(self, NetworkInfoForm):
         _translate = QtCore.QCoreApplication.translate
-        NetworkInfoForm.setWindowTitle(_translate("NetworkInfoForm", "Form"))
+        NetworkInfoForm.setWindowTitle(_translate("NetworkInfoForm", "Network Information"))
         self.DemandTable.setSortingEnabled(True)
         self.DemandTable_lbl.setText(_translate("NetworkInfoForm", "Demands Table"))
         self.NetworkInforTab.setTabText(self.NetworkInforTab.indexOf(self.DemandTab), _translate("NetworkInfoForm", "Demands"))

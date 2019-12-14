@@ -157,11 +157,18 @@ class Graph:
         target_node = self.get_node_based_on_label(target)
         if source_node not in self.nodes or target_node not in self.nodes:
             raise Exception(f'{source} or {target} not in the Graph')
-        demand_object = Demand(source_node,target_node,demand)
-        self.demands.append(demand_object)
-        self.redeploy_demands()
-        #self.reset_spf(demand=True)
 
+        damand_exists = False
+        for existing_demand in self.demands:
+            if source_node == existing_demand.source and target_node == existing_demand.target:
+                existing_demand.demand += demand
+                damand_exists = True
+        if not damand_exists:
+            demand_object = Demand(source_node,target_node,demand)
+            self.demands.append(demand_object)
+        #self.redeploy_demands()
+        #self.reset_spf(demand=True)
+    '''
     def check_if_demand_exists_or_add(self,source_label:str,target_label:str,demand:float):
         source_node = self.get_node_based_on_label(source_label)
         target_node = self.get_node_based_on_label(target_label)
@@ -170,9 +177,10 @@ class Graph:
             if source_node == existing_demand.source and target_node == existing_demand.target:
                 existing_demand.demand += demand
                 damand_exists = True
-                self.redeploy_demands()
+                #self.redeploy_demands()
         if not damand_exists:
             self.add_demand(source=source_label,target=target_label,demand=demand)
+    '''
 
 
     def remove_all_demands(self):
@@ -187,7 +195,9 @@ class Graph:
             for interface in node.interfaces:
                 interface._on_spf = False
                 interface.util = 0
+
         self.deploy_demands()
+
 
     def remove_node(self, node_to_be_removed: Node):
         """Deletes a node and all of the vertices that point to it from the graph."""
@@ -201,7 +211,7 @@ class Graph:
                 if node_to_be_removed  == interface.target:
                     #TODO
                     node.removeInterface(interface)
-        self.redeploy_demands()
+        #self.redeploy_demands()
         self.calculate_components()
 
 
@@ -229,7 +239,7 @@ class Graph:
         print('remote_interface',remote_interface)
         node_source.removeInterface(interface_to_be_removed)
         node_target.removeInterface(remote_interface)
-        self.redeploy_demands()
+        #self.redeploy_demands()
         self.calculate_components()
 
     def add_vertex(self, n1: Node, n2: Node, metric: float = 0, util: float = 0, local_ip: str = 'None', linknum: int = 0,
@@ -269,38 +279,41 @@ class Graph:
 
     def GetSpfPath(self, source: Node, target: Node, demand: int):
         G = nx.MultiDiGraph()
+        #node_list = [node for node in self.get_nodes() if not node._failed]
         node_list = self.get_nodes()
         for node in node_list:
             for interface in node.interfaces:
                 if not interface._failed:
                     G.add_edge(node,interface.target,**interface._networkX(),data=interface)
-        try:
-            paths = list(nx.all_shortest_paths(G, source, target, weight='metric'))
-            num_ecmp_paths = len(paths)
-            demand_path = demand / num_ecmp_paths
-            for p in paths:
-                u=p[0]
-                for v in p[1:]:
-                    values_u_v = G[u][v].values()
-                    min_weight = min(d['metric'] for d in values_u_v)
-                    ecmp_links = [k for k, d in G[u][v].items() if d['metric'] == min_weight]
-                    num_ecmp_links = len(ecmp_links)
-                    for d in ecmp_links:
-                        G[u][v][d]['data'].util += int(demand_path)/int(num_ecmp_links)
-                        G[u][v][d]['data']._on_spf = True
-                    u=v
-        except Exception:
-            #TODO Exception propagation
-            pass
-            #raise
-            #self.faildemands.append()
+        G.add_nodes_from(node_list)
+        paths = list(nx.all_shortest_paths(G, source, target, weight='metric'))
+        num_ecmp_paths = len(paths)
+        demand_path = demand / num_ecmp_paths
+        for p in paths:
+            u=p[0]
+            for v in p[1:]:
+                values_u_v = G[u][v].values()
+                min_weight = min(d['metric'] for d in values_u_v)
+                ecmp_links = [k for k, d in G[u][v].items() if d['metric'] == min_weight]
+                num_ecmp_links = len(ecmp_links)
+                for d in ecmp_links:
+                    G[u][v][d]['data'].util += int(demand_path)/int(num_ecmp_links)
+                    G[u][v][d]['data']._on_spf = True
+                u=v
+
 
     def get_demands(self):
         return self.demands
 
     def deploy_demands(self):
         for demand in self.demands:
-            self.GetSpfPath(demand.source,demand.target,demand.demand)
+            try:
+                self.GetSpfPath(demand.source,demand.target,demand.demand)
+                demand.unrouted = False
+            except Exception:
+                print('demand.status = "Not Deployed"')
+                demand.unrouted = True
+
 
     def get_number_of_links(self):
         nr_of_links = 0
@@ -364,3 +377,7 @@ class Graph:
                 u=v
 
         return circuit_list
+
+    def get_unrouted_demands(self):
+        return_list = [demand for demand in self.demands if demand.unrouted]
+        return return_list

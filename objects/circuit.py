@@ -26,7 +26,7 @@ class Circuit:
         any circuits as the Graph for L1 is directed"""
         self._failed = True
         for interface in self.interfaces:
-            print('this is interface in failCircuit',interface)
+            #print('this is interface in failCircuit',interface)
             interface.failInterface()
 
     def unfailCircuit(self):
@@ -36,7 +36,7 @@ class Circuit:
         any circuits as the Graph for L1 is directed"""
         self._failed = False
         for interface in self.interfaces:
-            print('this is interface in unfailCircuit',interface)
+            #print('this is interface in unfailCircuit',interface)
             interface.unfailInterface()
 
     def get_interfaces(self):

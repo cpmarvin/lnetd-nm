@@ -8,7 +8,9 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-class Ui_EditLabel(object):
+class Ui_EditLabel(QtCore.QObject):
+
+    update_demands = QtCore.pyqtSignal(str)
 
     def change_metric(self):
         metric = None
@@ -21,7 +23,7 @@ class Ui_EditLabel(object):
                 )
         if metric is not None:
             self.vertex.change_metric(metric)
-            self.graph.redeploy_demands()
+            self.update_demands.emit('oh well run the reports if you must')
 
     def setupUi(self, EditLabel,vertex, graph):
         self.vertex = vertex

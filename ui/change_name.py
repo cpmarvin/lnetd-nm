@@ -8,12 +8,12 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-class Ui_ChangeName(QtWidgets.QWidget):
+class Ui_ChangeName(object):
     update_demands = QtCore.pyqtSignal(str)
 
     def change_name(self):
         #check if node name not in used
-        new_label = self.name_txt.text()
+        new_label = self.lineEdit.text()
         node_labels = [ node.get_label() for node in self.graph.nodes ]
         if new_label in node_labels:
             #raise Exception
@@ -21,7 +21,7 @@ class Ui_ChangeName(QtWidgets.QWidget):
                     self.horizontalLayoutWidget, "Error!", "There is a node with this name already !!!"
                 )
         else:
-            self.node.label = new_label
+            self.node.label = self.name_txt.text()
             self.update_demands.emit('oh well run the reports if you must')
 
     def setupUi(self, Form,node, graph):
@@ -50,12 +50,11 @@ class Ui_ChangeName(QtWidgets.QWidget):
 
         self.retranslateUi(Form)
         self.close_btn.clicked.connect(Form.close)
-        self.save_btn.clicked.connect(self.change_name)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "Change Node Name"))
+        Form.setWindowTitle(_translate("Form", "Form"))
         self.save_btn.setText(_translate("Form", "Save"))
         self.close_btn.setText(_translate("Form", "Close"))
         self.name_lbl.setText(_translate("Form", "Name:"))
