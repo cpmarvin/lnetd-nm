@@ -1,0 +1,103 @@
+{
+    "links": [
+        {
+            "capacity": 10000,
+            "l_ip_r_ip": [
+                "et-0/0/0",
+                "et-0/0/0"
+            ],
+            "local_ip": "166.68.200.1",
+            "metric": 10,
+            "remote_ip": "166.68.200.2",
+            "rtr_pair": [
+                "RTR1",
+                "RTR2"
+            ],
+            "source": "RTR2",
+            "target": "RTR1"
+        },
+        {
+            "capacity": 10000,
+            "l_ip_r_ip": [
+                "et-0/0/0",
+                "et-0/0/0"
+            ],
+            "local_ip": "166.68.200.2",
+            "metric": 10,
+            "remote_ip": "166.68.200.1",
+            "rtr_pair": [
+                "RTR1",
+                "RTR2"
+            ],
+            "source": "RTR1",
+            "target": "RTR2"
+        },
+        {
+            "capacity": 10000,
+            "l_ip_r_ip": [
+                "et-0/0/5",
+                "et-0/0/5"
+            ],
+            "local_ip": "46.199.137.1",
+            "metric": 10,
+            "remote_ip": "46.199.137.2",
+            "rtr_pair": [
+                "RTR1",
+                "RTR2"
+            ],
+            "source": "RTR2",
+            "target": "RTR1"
+        },
+        {
+            "capacity": 10000,
+            "l_ip_r_ip": [
+                "et-0/0/5",
+                "et-0/0/5"
+            ],
+            "local_ip": "46.199.137.2",
+            "metric": 10,
+            "remote_ip": "46.199.137.1",
+            "rtr_pair": [
+                "RTR1",
+                "RTR2"
+            ],
+            "source": "RTR1",
+            "target": "RTR2"
+        },
+        {
+            "capacity": 10000,
+            "l_ip_r_ip": [
+                "et-0/0/9",
+                "et-0/0/9"
+            ],
+            "local_ip": "83.1.102.1",
+            "metric": 10,
+            "remote_ip": "83.1.102.2",
+            "rtr_pair": [
+                "RTR1",
+                "RTR2"
+            ],
+            "source": "RTR2",
+            "target": "RTR1"
+        },
+        {
+            "capacity": 10000,
+            "l_ip_r_ip": [
+                "et-0/0/9",
+                "et-0/0/9"
+            ],
+            "local_ip": "83.1.102.2",
+            "metric": 10,
+            "remote_ip": "83.1.102.1",
+            "rtr_pair": [
+                "RTR1",
+                "RTR2"
+            ],
+            "source": "RTR1",
+            "target": "RTR2"
+        }
+    ],
+    "nodes": [
+        {}
+    ]
+}
