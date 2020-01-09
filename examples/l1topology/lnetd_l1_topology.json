@@ -1,0 +1,14 @@
+{
+    "l1_links": [
+        {"label": "CIRCUIT-1", "source": "DWDM-UK", "target": "DWDM-NL", "interfaces": ["10.7.10.7", "10.111.13.111", "10.11.13.11"]},
+        {"label": "CIRCUIT-2", "source": "DWDM-UK", "target": "DWDM-NL", "interfaces": ["10.5.7.5"]},
+        {"label": "CIRCUIT-3", "source": "DWDM-NL", "target": "DWDM-FR", "interfaces": ["10.5.7.5","10.7.10.7"]},
+        {"label": "CIRCUIT-4", "source": "DWDM-FR", "target": "DWDM-KE", "interfaces": ["10.6.7.7"]}
+    ],
+    "l1_nodes": [
+        {"name": "DWDM-UK", "x": 40, "y": 60},
+        {"name": "DWDM-NL", "x": 180, "y": 60},
+        {"name": "DWDM-FR", "x": 160, "y": 180},
+        {"name": "DWDM-KE", "x": 40, "y": 180}
+    ]
+}
