@@ -1,0 +1,77 @@
+<RCC>
+  <qresource prefix="/fonts">
+    <file alias='Roboto-Regular.ttf'>fonts/Roboto-Regular.ttf</file>
+  </qresource>
+  <qresource prefix="/icons">
+    <file alias='roadm_selected.png'>icons/roadm_selected.png</file>
+    <file alias='roadm_down.png'>icons/roadm_down.png</file>
+    <file alias='roadm.png'>icons/roadm.png</file>
+    <file alias='router.png'>icons/router.png</file>
+    <file alias='router_down.png'>icons/router_down.png</file>
+    <file alias='router_new.png'>icons/router_new.png</file>
+    <file alias='cloud.png'>icons/cloud.png</file>
+    <file alias='cloud_down.png'>icons/cloud_down.png</file>
+    <file alias='cloud_selected.png'>icons/cloud_selected.png</file>
+  </qresource>
+<qresource prefix="/theme/light">
+    <file alias='style_light.css'>theme/light/style_light.css</file>
+  </qresource>
+<qresource prefix="/theme/dark">
+    <file alias='style_dark.css'>theme/dark/style_dark.css</file>
+  </qresource>
+  <qresource prefix="/theme/qss_icons/rc">
+    <file alias='arrow_down.png'>theme/qss_icons/rc/arrow_down.png</file>
+    <file alias='arrow_down@2x.png'>theme/qss_icons/rc/arrow_down@2x.png</file>
+    <file alias='arrow_down_disabled.png'>theme/qss_icons/rc/arrow_down_disabled.png</file>
+    <file alias='arrow_down_disabled@2x.png'>theme/qss_icons/rc/arrow_down_disabled@2x.png</file>
+    <file alias='arrow_down_focus.png'>theme/qss_icons/rc/arrow_down_focus.png</file>
+    <file alias='arrow_down_focus@2x.png'>theme/qss_icons/rc/arrow_down_focus@2x.png</file>
+    <file alias='arrow_down_pressed.png'>theme/qss_icons/rc/arrow_down_pressed.png</file>
+    <file alias='arrow_down_pressed@2x.png'>theme/qss_icons/rc/arrow_down_pressed@2x.png</file>
+
+    <file alias='line_horizontal.png'>theme/qss_icons/rc/line_horizontal.png</file>
+    <file alias='line_horizontal@2x.png'>theme/qss_icons/rc/line_horizontal@2x.png</file>
+    <file alias='line_horizontal_disabled.png'>theme/qss_icons/rc/line_horizontal_disabled.png</file>
+    <file alias='line_horizontal_disabled@2x.png'>theme/qss_icons/rc/line_horizontal_disabled@2x.png</file>
+    <file alias='line_horizontal_focus.png'>theme/qss_icons/rc/line_horizontal_focus.png</file>
+    <file alias='line_horizontal_focus@2x.png'>theme/qss_icons/rc/line_horizontal_focus@2x.png</file>
+    <file alias='line_horizontal_pressed.png'>theme/qss_icons/rc/line_horizontal_pressed.png</file>
+    <file alias='line_horizontal_pressed@2x.png'>theme/qss_icons/rc/line_horizontal_pressed@2x.png</file>
+
+    <file alias='checkbox_checked.png'>theme/qss_icons/rc/checkbox_checked.png</file>
+    <file alias='checkbox_checked@2x.png'>theme/qss_icons/rc/checkbox_checked@2x.png</file>
+    <file alias='checkbox_checked_disabled.png'>theme/qss_icons/rc/checkbox_checked_disabled.png</file>
+    <file alias='checkbox_checked_disabled@2x.png'>theme/qss_icons/rc/checkbox_checked_disabled@2x.png</file>
+    <file alias='checkbox_checked_focus.png'>theme/qss_icons/rc/checkbox_checked_focus.png</file>
+    <file alias='checkbox_checked_focus@2x.png'>theme/qss_icons/rc/checkbox_checked_focus@2x.png</file>
+    <file alias='checkbox_checked_pressed.png'>theme/qss_icons/rc/checkbox_checked_pressed.png</file>
+    <file alias='checkbox_checked_pressed@2x.png'>theme/qss_icons/rc/checkbox_checked_pressed@2x.png</file>
+    <file alias='checkbox_indeterminate.png'>theme/qss_icons/rc/checkbox_indeterminate.png</file>
+    <file alias='checkbox_indeterminate@2x.png'>theme/qss_icons/rc/checkbox_indeterminate@2x.png</file>
+    <file alias='checkbox_indeterminate_disabled.png'>theme/qss_icons/rc/checkbox_indeterminate_disabled.png</file>
+    <file alias='checkbox_indeterminate_disabled@2x.png'>theme/qss_icons/rc/checkbox_indeterminate_disabled@2x.png</file>
+    <file alias='checkbox_indeterminate_focus.png'>theme/qss_icons/rc/checkbox_indeterminate_focus.png</file>
+    <file alias='checkbox_indeterminate_focus@2x.png'>theme/qss_icons/rc/checkbox_indeterminate_focus@2x.png</file>
+    <file alias='checkbox_indeterminate_pressed.png'>theme/qss_icons/rc/checkbox_indeterminate_pressed.png</file>
+    <file alias='checkbox_indeterminate_pressed@2x.png'>theme/qss_icons/rc/checkbox_indeterminate_pressed@2x.png</file>
+    <file alias='checkbox_unchecked.png'>theme/qss_icons/rc/checkbox_unchecked.png</file>
+    <file alias='checkbox_unchecked@2x.png'>theme/qss_icons/rc/checkbox_unchecked@2x.png</file>
+    <file alias='checkbox_unchecked_disabled.png'>theme/qss_icons/rc/checkbox_unchecked_disabled.png</file>
+    <file alias='checkbox_unchecked_disabled@2x.png'>theme/qss_icons/rc/checkbox_unchecked_disabled@2x.png</file>
+    <file alias='checkbox_unchecked_focus.png'>theme/qss_icons/rc/checkbox_unchecked_focus.png</file>
+    <file alias='checkbox_unchecked_focus@2x.png'>theme/qss_icons/rc/checkbox_unchecked_focus@2x.png</file>
+    <file alias='checkbox_unchecked_pressed.png'>theme/qss_icons/rc/checkbox_unchecked_pressed.png</file>
+    <file alias='checkbox_unchecked_pressed@2x.png'>theme/qss_icons/rc/checkbox_unchecked_pressed@2x.png</file>
+
+    <file alias='radio_checked.png'>theme/qss_icons/rc/radio_checked.png</file>
+    <file alias='radio_checked_disabled.png'>theme/qss_icons/rc/radio_checked_disabled.png</file>
+    <file alias='radio_checked_focus.png'>theme/qss_icons/rc/radio_checked_focus.png</file>
+    <file alias='radio_checked_pressed.png'>theme/qss_icons/rc/radio_checked_pressed.png</file>
+    <file alias='radio_unchecked.png'>theme/qss_icons/rc/radio_unchecked.png</file>
+    <file alias='radio_unchecked_disabled.png'>theme/qss_icons/rc/radio_unchecked_disabled.png</file>
+    <file alias='radio_unchecked_focus.png'>theme/qss_icons/rc/radio_unchecked_focus.png</file>
+    <file alias='radio_unchecked_pressed.png'>theme/qss_icons/rc/radio_unchecked_pressed.png</file>
+
+
+  </qresource>
+</RCC>

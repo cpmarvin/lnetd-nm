@@ -1,14 +1,15 @@
 import sys
 sys.path.append('../')
 
-from objects.graph import Graph
-from objects.node import Node
-from objects.l1node import L1Node
-from objects.interface import Interface
-from objects.demand import Demand
-from objects.circuit import Circuit
+from graph import Graph
+from node import Node
+from l1node import L1Node
+from interface import Interface
+from demand import Demand
+from circuit import Circuit
 
 from utilities import *
+from support import *
 
 lnetd_links = [
     {'source': 'gb-p10-lon', 'target': 'gb-pe5-lon', 'local_ip': '10.5.10.10', 'metric': '10', 'r_ip': '10.5.10.5', 'util': 0, 'capacity': 1000} ,
@@ -93,6 +94,7 @@ def load_graph(lnetd_links):
 
 graph = load_graph(lnetd_links)
 
+
 def test_graph_load():
     assert load_graph(lnetd_links)
 
@@ -121,7 +123,7 @@ node1 = graph.get_node_based_on_label('nl-p13-ams')
 node2 = graph.get_node_based_on_label('ke-pe2-nbi')
 
 def get_demand_between_nodes(graph,node1:str,node2:str,demand):
-    depoly_demand = graph.check_if_demand_exists_or_add(str(node1),str(node2),demand)
+    depoly_demand = graph.add_demand(str(node1),str(node2),demand)
     demand_result = []
     for node in graph.nodes:
         for interface in node.interfaces:
@@ -158,29 +160,3 @@ def test_demand_between_nodes_fail_interface():
     expected_result = [{'10.7.10.10': 100.0}, {'10.5.10.5': 100.0}, {'10.6.7.7': 100.0}, {'10.5.11.11': 100.0}, {'10.2.6.6': 100.0}, {'10.111.13.13': 100.0}]
     assert result == expected_result
 
-'''
-TODO TEST graph deploy multiple demands
-#demands
-demand1 = Demand(node1,node2,500)
-demand2 = Demand(node1,node2,500)
-
-graph.add_demand(node1,node2,500)
-graph.add_demand(node1,node2,500)
-
-print(graph.get_demands())
-
-graph.deploy_demands()
-spf_result = []
-for node in graph_nodes:
-    for interface in node.interfaces:
-        if interface.util != 0.0 :
-            spf_result.append({interface.get_label(): interface.utilization()})
-print(spf_result)
-expected_result = [{'10.7.10.10': 100.0}, {'10.5.10.5': 100.0}, {'10.6.7.7': 100.0}, {'10.5.11.11': 100.0}, {'10.2.6.6': 100.0}, {'10.111.13.13': 50.0}, {'10.11.13.13': 50.0}]
-if expected_result == spf_result:
-    print('all ok')
-else:
-    raise Exception
-graph.reset_spf()
-
-'''

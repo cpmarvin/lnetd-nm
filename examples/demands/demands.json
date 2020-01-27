@@ -1,0 +1,6 @@
+{
+    "demands": [
+        {"source": "ke-pe3-nbi", "target": "nl-p13-ams", "value": 500},
+        {"source": "ke-pe3-nbi", "target": "gb-pe8-lon", "value": 500}
+    ]
+}
