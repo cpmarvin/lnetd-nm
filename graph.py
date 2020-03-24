@@ -285,7 +285,6 @@ class Graph:
                 self.GetSpfPath(demand.source,demand.target,demand.demand)
                 demand.unrouted = False
             except Exception:
-                print('Failed',demand.source,demand.target,demand.demand)
                 demand.unrouted = True
                 pass
 
