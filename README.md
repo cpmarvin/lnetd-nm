@@ -1,7 +1,7 @@
 # lnetd_qt
 PyQt5 implementation for LnetD
 
-Please see release tab for latest version ( source code is not uploaded yet )
+Please see release tab for latest version 
 
 LnetD-Qt Main Window:
 ![LnetD](/images/lnetd_qt_main_window.png)
