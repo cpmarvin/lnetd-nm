@@ -71,7 +71,7 @@ class GraphicsView(QtWidgets.QGraphicsView):
 
     def wheelEvent(self, event):
         """Zoom in/out"""
-        self.scaleView(math.pow(2.0, -event.angleDelta().y() / 240.0))
+        self.scaleView(math.pow(2.0, event.angleDelta().y() / 240.0))
 
     def scaleView(self, scaleFactor):
         """Transform function and zoom
