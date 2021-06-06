@@ -1,6 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import Set,Tuple,List,Generic,Any,Dict,Callable
+from typing import Set, Tuple, List, Generic, Any, Dict, Callable
 
 import networkx as nx
 
@@ -8,6 +8,7 @@ from node import Node
 from l1node import L1Node
 from interface import Interface
 from demand import Demand
+
 
 class Graph:
     """A class for working with graphs."""
@@ -21,7 +22,7 @@ class Graph:
         self.components: Set[Node] = []
         self.demands: List[Demand] = []
 
-    def reset_spf1(self,demand=False):
+    def reset_spf1(self, demand=False):
         for node in self.nodes:
             for interface in node.interfaces:
                 interface._on_spf = False
@@ -35,7 +36,7 @@ class Graph:
 
         for node in self.nodes:
             # the current set of nodes that we know are reachable from one another
-            working_set = set( [node] + node.get_neighbours() )
+            working_set = set([node] + node.get_neighbours())
             set_index = None
 
             i = 0
@@ -60,6 +61,7 @@ class Graph:
             # if we haven't performed any set merges, add the set to the continuity sets
             if set_index is None:
                 self.components.append(working_set)
+
     def share_component(self, n1: Node, n2: Node) -> bool:
         """Returns True if both of the nodes are in the same component, else False."""
 
@@ -98,16 +100,16 @@ class Graph:
     def get_weight(self, n1: Node, n2: Node):
         """Returns the weight of the specified vertex and None if it doesn't exist."""
         for n in n1.get_neighbours():
-            if n2 == n['neighbour']:
-                return 'test'
-                #return True
-        '''
+            if n2 == n["neighbour"]:
+                return "test"
+                # return True
+        """
         return (
             None
             if not self.does_vertex_exist(n1, n2)
             else self.nodes[self.nodes.index(n1)].neighbours[n2]
         )
-        '''
+        """
 
     def get_nodes(self) -> List[Node]:
         """Returns a list of nodes of the graph."""
@@ -117,8 +119,8 @@ class Graph:
         exported_nodes = []
         for node in self.nodes:
             exported_nodes.append(
-                {"name":node.label,"x":node.position[0],"y":node.position[1]}
-                )
+                {"name": node.label, "x": node.position[0], "y": node.position[1]}
+            )
         return exported_nodes
 
     def get_nodes_label(self) -> List[str]:
@@ -128,11 +130,10 @@ class Graph:
             labels.append(node.label)
         return labels
 
-    def get_node_based_on_label(self,label) ->Node:
+    def get_node_based_on_label(self, label) -> Node:
         for node in self.nodes:
             if node.label == label:
                 return node
-
 
     def generate_label(self) -> str:
         """Returns a node label, based on the number of nodes in the tree in the form of
@@ -148,22 +149,25 @@ class Graph:
         node = Node(position, radius, label)
         self.nodes.append(node)
 
-        #self.calculate_components()
+        # self.calculate_components()
         return node
 
-    def add_demand(self,source:str,target:str,demand:float):
+    def add_demand(self, source: str, target: str, demand: float):
         source_node = self.get_node_based_on_label(source)
         target_node = self.get_node_based_on_label(target)
         if source_node not in self.nodes or target_node not in self.nodes:
-            raise Exception(f'{source} or {target} not in the Graph')
+            raise Exception(f"{source} or {target} not in the Graph")
 
         damand_exists = False
         for existing_demand in self.demands:
-            if source_node == existing_demand.source and target_node == existing_demand.target:
+            if (
+                source_node == existing_demand.source
+                and target_node == existing_demand.target
+            ):
                 existing_demand.demand += demand
                 damand_exists = True
         if not damand_exists:
-            demand_object = Demand(source_node,target_node,demand)
+            demand_object = Demand(source_node, target_node, demand)
             self.demands.append(demand_object)
 
     def remove_all_demands(self):
@@ -174,13 +178,12 @@ class Graph:
                 interface.util = 0
 
     def redeploy_demands(self):
-        #self.remove_all_demands()
+        # self.remove_all_demands()
         for node in self.nodes:
             for interface in node.interfaces:
                 interface._on_spf = False
                 interface.util = 0
         self.deploy_demands()
-
 
     def remove_node(self, node_to_be_removed: Node):
         """Deletes a node and all of the vertices that point to it from the graph."""
@@ -190,17 +193,17 @@ class Graph:
         # remove all of its vertices
         for node in self.get_nodes():
             import copy
+
             node_interfaces = copy.copy(node.get_interfaces())
             for interface in node_interfaces:
-                if node_to_be_removed  == interface.target:
-                    #TODO
+                if node_to_be_removed == interface.target:
+                    # TODO
                     node.removeInterface(interface)
-        #self.redeploy_demands()
+        # self.redeploy_demands()
 
         self.calculate_components()
 
-
-    def get_node_by_interface_ip(self,local_ip):
+    def get_node_by_interface_ip(self, local_ip):
         all_nodes = self.get_nodes()
         interface_list = []
         for node in all_nodes:
@@ -208,28 +211,46 @@ class Graph:
                 if interface.local_ip == local_ip:
                     return node
 
-    def remove_interface(self,interface_to_be_removed:Interface):
-        #find the other interface so we remove both
-        #find the node that has this ip
+    def remove_interface(self, interface_to_be_removed: Interface):
+        # find the other interface so we remove both
+        # find the node that has this ip
         node_source = self.get_node_by_interface_ip(interface_to_be_removed.local_ip)
         node_target = interface_to_be_removed.target
         remote_ip = interface_to_be_removed.remote_ip
         remote_interface = node_target.get_interface_by_ip(str(remote_ip))
         node_source.removeInterface(interface_to_be_removed)
         node_target.removeInterface(remote_interface)
-        #self.calculate_components()
+        # self.calculate_components()
 
-    def add_vertex(self, n1: Node, n2: Node, metric: float = 0, util: float = 0, local_ip: str = 'None', linknum: int = 0,
-        spf: str = '0', capacity: int = 0 , remote_ip: str = 'Node'):
+    def add_vertex(
+        self,
+        n1: Node,
+        n2: Node,
+        metric: float = 0,
+        util: float = 0,
+        local_ip: str = "None",
+        linknum: int = 0,
+        spf: str = "0",
+        capacity: int = 0,
+        remote_ip: str = "Node",
+    ):
         """Adds a vertex from node n1 to node n2"""
-        interface = Interface(target=n2,metric=metric,util=util,local_ip=local_ip,capacity=capacity,remote_ip=remote_ip,linknum=linknum)
+        interface = Interface(
+            target=n2,
+            metric=metric,
+            util=util,
+            local_ip=local_ip,
+            capacity=capacity,
+            remote_ip=remote_ip,
+            linknum=linknum,
+        )
         n1.interfaces.append(interface)
 
     def does_vertex_exist(self, n1: Node, n2: Node, ignore_direction=False) -> bool:
         """Returns True if a vertex exists between the two nodes and False otherwise."""
         return n2 in n1.get_neighbours() or (
             (not self.directed or ignore_direction) and n1 in n2.get_neighbours()
-            )
+        )
 
     def toggle_vertex(self, n1: Node, n2: Node):
         """Toggles a connection between to vertexes."""
@@ -253,28 +274,31 @@ class Graph:
 
     def GetSpfPath(self, source: Node, target: Node, demand: int):
         G = nx.MultiDiGraph()
-        #node_list = [node for node in self.get_nodes() if not node._failed]
+        # node_list = [node for node in self.get_nodes() if not node._failed]
         node_list = self.get_nodes()
         for node in node_list:
             for interface in node.interfaces:
                 if not interface._failed:
-                    G.add_edge(node,interface.target,**interface._networkX(),data=interface)
+                    G.add_edge(
+                        node, interface.target, **interface._networkX(), data=interface
+                    )
         G.add_nodes_from(node_list)
-        paths = list(nx.all_shortest_paths(G, source, target, weight='metric'))
+        paths = list(nx.all_shortest_paths(G, source, target, weight="metric"))
         num_ecmp_paths = len(paths)
         demand_path = demand / num_ecmp_paths
         for p in paths:
-            u=p[0]
+            u = p[0]
             for v in p[1:]:
                 values_u_v = G[u][v].values()
-                min_weight = min(d['metric'] for d in values_u_v)
-                ecmp_links = [k for k, d in G[u][v].items() if d['metric'] == min_weight]
+                min_weight = min(d["metric"] for d in values_u_v)
+                ecmp_links = [
+                    k for k, d in G[u][v].items() if d["metric"] == min_weight
+                ]
                 num_ecmp_links = len(ecmp_links)
                 for d in ecmp_links:
-                    G[u][v][d]['data'].util += int(demand_path)/int(num_ecmp_links)
-                    G[u][v][d]['data']._on_spf = True
-                u=v
-
+                    G[u][v][d]["data"].util += int(demand_path) / int(num_ecmp_links)
+                    G[u][v][d]["data"]._on_spf = True
+                u = v
 
     def get_demands(self):
         return self.demands
@@ -282,12 +306,11 @@ class Graph:
     def deploy_demands(self):
         for demand in self.demands:
             try:
-                self.GetSpfPath(demand.source,demand.target,demand.demand)
+                self.GetSpfPath(demand.source, demand.target, demand.demand)
                 demand.unrouted = False
             except Exception:
                 demand.unrouted = True
                 pass
-
 
     def get_number_of_links(self):
         nr_of_links = 0
@@ -308,24 +331,32 @@ class Graph:
             node_interfaces[interface.local_ip] = interface
         return node_interfaces
 
-    def update_linknum(self,node1: Node,node2: Node):
+    def update_linknum(self, node1: Node, node2: Node):
 
-        number_of_int_btw_nodes = [ interface for interface in node2.interfaces if interface.target == node1]
+        number_of_int_btw_nodes = [
+            interface for interface in node2.interfaces if interface.target == node1
+        ]
         i = 1
         node1_int = node1.interfaces
         node2_int = node2.interfaces
 
         for number, interface in enumerate(node1_int):
-            if interface.target == node2 and interface.local_ip == node2.get_interface_by_ip(interface.remote_ip).remote_ip:
+            if (
+                interface.target == node2
+                and interface.local_ip
+                == node2.get_interface_by_ip(interface.remote_ip).remote_ip
+            ):
                 interface.link_num = i
                 node2_interface = node2.get_interface_by_ip(interface.remote_ip)
                 node2_interface.link_num = i
                 i += 1
 
-        #small check , this should be equal
-        #TODO redo this
-        if i != len(number_of_int_btw_nodes) +1 :
-            raise Exception("number not equal to number_of_int_btw_nodes , something is wrong")
+        # small check , this should be equal
+        # TODO redo this
+        if i != len(number_of_int_btw_nodes) + 1:
+            raise Exception(
+                "number not equal to number_of_int_btw_nodes , something is wrong"
+            )
 
     def get_all_circuits(self):
         all_graph_circuits = []
@@ -333,27 +364,34 @@ class Graph:
             all_graph_circuits += l1node.get_circuits()
         return all_graph_circuits
 
-    def get_circuits_l1_node(self,n1):
+    def get_circuits_l1_node(self, n1):
         """Return a list of circuits where n1
         is either a source or a target in the graph"""
-        #Create Graph MultiGraph ( undirected )
+        # Create Graph MultiGraph ( undirected )
         circuit_list = []
         G = nx.MultiGraph()
         for node in self.l1nodes:
             for circuit in node.circuits:
-                G.add_edge(node,circuit.target,data=circuit)
-        #find all circuits
+                G.add_edge(node, circuit.target, data=circuit)
+        # find all circuits
         for circuit in G.edges(n1):
-            u=circuit[0]
+            u = circuit[0]
             for v in circuit[1:]:
                 ecmp_links = [k for k, d in G[u][v].items()]
                 for d in ecmp_links:
-                    if G[u][v][d]['data'] not in circuit_list:
-                        circuit_list.append(G[u][v][d]['data'])
-                u=v
+                    if G[u][v][d]["data"] not in circuit_list:
+                        circuit_list.append(G[u][v][d]["data"])
+                u = v
 
         return circuit_list
 
     def get_unrouted_demands(self):
         return_list = [demand for demand in self.demands if demand.unrouted]
         return return_list
+
+    def get_peer_interface(self, interface):
+        """Return peer interface of a graph"""
+        target_node = interface.target
+        for t_interface in target_node.interfaces:
+            if t_interface.local_ip == interface.remote_ip:
+                return t_interface
