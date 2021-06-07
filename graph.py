@@ -272,7 +272,7 @@ class Graph:
 
         self.calculate_components()
 
-    def GetSpfPath(self, source: Node, target: Node, demand: int):
+    def GetSpfPath(self, source: Node, target: Node, demand: int, demand_obj: Demand):
         G = nx.MultiDiGraph()
         # node_list = [node for node in self.get_nodes() if not node._failed]
         node_list = self.get_nodes()
@@ -291,6 +291,8 @@ class Graph:
             for v in p[1:]:
                 values_u_v = G[u][v].values()
                 min_weight = min(d["metric"] for d in values_u_v)
+                # path_list = f"{ source:{u} , target:{v} , metric:{min_weight} }"
+                demand_obj.demand_path.append([u, v, min_weight])
                 ecmp_links = [
                     k for k, d in G[u][v].items() if d["metric"] == min_weight
                 ]
@@ -306,7 +308,7 @@ class Graph:
     def deploy_demands(self):
         for demand in self.demands:
             try:
-                self.GetSpfPath(demand.source, demand.target, demand.demand)
+                self.GetSpfPath(demand.source, demand.target, demand.demand, demand)
                 demand.unrouted = False
             except Exception:
                 demand.unrouted = True

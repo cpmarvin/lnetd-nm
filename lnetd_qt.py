@@ -170,18 +170,39 @@ class Ui_MainWindow(object):
                     )
 
     def update_demandtable(self):
-        self.DemandTable.setRowCount(0)
+        self.DemandTable.clear()
+        # self.DemandTable.setRowCount(0)
         # TODO fix this , should be dynamic
+        """
         self.DemandTable.setHorizontalHeaderLabels(
+            ["Source", "Target", "Demand (Mbps)", "Fail to Deploy"]
+        )
+        """
+        self.DemandTable.setHeaderLabels(
             ["Source", "Target", "Demand (Mbps)", "Fail to Deploy"]
         )
 
         for row_number, row_data in enumerate(self.graph.demands):
-            self.DemandTable.insertRow(row_number)
+            # self.DemandTable.insertRow(row_number)
+            items = []
             for column_number, data in enumerate(row_data.__dict__.values()):
+                """
                 self.DemandTable.setItem(
-                    row_number, column_number, QtWidgets.QTableWidgetItem(str(data))
+                    row_number,
+                    column_number,
+                    QtWidgets.QTableWidgetItem(str(data)),
                 )
+                """
+                items.append(str(data))
+            l1 = QtWidgets.QTreeWidgetItem(items)
+            for path in row_data.demand_path:
+                string_output = []
+                string_output.append(f"source:{path[0].label}")
+                string_output.append(f"target:{path[1].label}")
+                string_output.append(f"metric:{path[2]}")
+                l1_1 = QtWidgets.QTreeWidgetItem(string_output)
+                l1.addChild(l1_1)
+            self.DemandTable.addTopLevelItem(l1)
 
     def network_info_update_values(self):
         """This is run when tab change is 2,
@@ -404,7 +425,7 @@ class Ui_MainWindow(object):
         self.demand_report()
 
     def sceneInterfaceChange(self, scene, interfaceItem):
-        #find the peer interface in the graph
+        # find the peer interface in the graph
         self.peer_interface = self.graph.get_peer_interface(interfaceItem.link)
         self.change_link = QDialog()
         self.change_link.setWindowFlags(Qt.Tool)  # tool so far
@@ -892,7 +913,8 @@ class Ui_MainWindow(object):
         self.demand_tab_layout.setContentsMargins(2, 2, 2, 2)
         self.demand_tab_layout.setObjectName("model_info_layout")
 
-        self.DemandTable = QtWidgets.QTableWidget()
+        # self.DemandTable = QtWidgets.QTableWidget()
+        self.DemandTable = QtWidgets.QTreeWidget()
         # self.DemandTable.setGeometry(QtCore.QRect(-5, 1, 951, 201))
         self.DemandTable.setObjectName("DemandTable")
         # self.DemandTable.setSizePolicy(sizePolicy)
@@ -901,17 +923,18 @@ class Ui_MainWindow(object):
         self.DemandTable.setSizeAdjustPolicy(
             QtWidgets.QAbstractScrollArea.AdjustToContents
         )
-        self.DemandTable.setGridStyle(QtCore.Qt.DashDotLine)
+        # self.DemandTable.setGridStyle(QtCore.Qt.DashDotLine)
         self.DemandTable.setWordWrap(False)
-        self.DemandTable.setRowCount(3)
-        self.DemandTable.setColumnCount(4)
+        # self.DemandTable.setRowCount(3)
+        # self.DemandTable.setColumnCount(4)
         self.DemandTable.setObjectName("DemandTable")
-        self.DemandTable.horizontalHeader().setVisible(True)
-        self.DemandTable.horizontalHeader().setCascadingSectionResizes(True)
-        self.DemandTable.horizontalHeader().setSectionResizeMode(
-            QtWidgets.QHeaderView.Stretch
-        )
-        self.DemandTable.verticalHeader().setVisible(False)
+        # self.DemandTable.horizontalHeader().setVisible(True)
+        # self.DemandTable.horizontalHeader().setCascadingSectionResizes(True)
+        # self.DemandTable.horizontalHeader().setSectionResizeMode(
+        #    QtWidgets.QHeaderView.Stretch
+        # )
+        # self.DemandTable.verticalHeader().setVisible(False)
+        self.DemandTable.expandAll()
 
         self.demand_tab_layout.addWidget(self.DemandTable)
         self.tabWidget.addTab(self.demand_tab, "")

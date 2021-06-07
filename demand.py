@@ -1,11 +1,14 @@
 from node import Node
 
+
 class Demand:
     """Demand class to hold the
     required demand in Mbps between two
     graph Nodes"""
 
-    def __init__(self,source:Node,target:Node,demand:float):
+    def __init__(
+        self, source: Node, target: Node, demand: float, demand_path: list = None
+    ):
         """
         :param source: The Source Node object
         :param target: The Target Node object
@@ -15,3 +18,4 @@ class Demand:
         self.target = target
         self.demand = demand
         self.unrouted = False
+        self.demand_path = []
