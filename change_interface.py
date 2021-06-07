@@ -9,7 +9,7 @@ class Ui_changeLink(QtWidgets.QDialog):
         capacity = None
         try:
             metric = int(self.metric_txt.text())
-            capacity = int(self.capacity_txt.text())
+            capacity = int(self.capacity_txt.text()) * 1000
         except ValueError:
             QtWidgets.QMessageBox.critical(
                 self.changeLinkMetric,
@@ -91,8 +91,8 @@ class Ui_changeLink(QtWidgets.QDialog):
         self.local_ip_txt.setText(str(self.interface.local_ip))
         self.remote_ip_lbl.setText(_translate("changeLinkMetric", "Remote IP:"))
         self.remote_ip_txt.setText(str(self.interface.remote_ip))
-        self.capacity_lbl.setText(_translate("changeLinkMetric", "Capacity:"))
-        self.capacity_txt.setText(str(self.interface.capacity))
+        self.capacity_lbl.setText(_translate("changeLinkMetric", "Capacity(Gbps):"))
+        self.capacity_txt.setText(str(self.interface.capacity / 1000))
         self.metric_lbl.setText(_translate("changeLinkMetric", "Metric: "))
         self.metric_txt.setText(str(self.interface.metric))
         self.update_peer_link.setText(
