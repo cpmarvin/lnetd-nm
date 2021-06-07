@@ -414,6 +414,10 @@ class Ui_MainWindow(object):
         node = nodeItem.node
         self.source_txt.setText(str(node.label))
 
+    def scenechangeNodeTarget(self, scene, nodeItem):
+        node = nodeItem.node
+        self.target_txt.setText(str(node.label))
+
     def sceneInterfaceDown(self, scene, InterfaceItem):
         interface_down = InterfaceItem
         interface_down.link.failInterface()
@@ -1053,6 +1057,7 @@ class Ui_MainWindow(object):
         self.scene.nodeDelete.connect(self.scenedeleteNode)
         self.scene.changeNodeName.connect(self.scenechangeNodeName)
         self.scene.nodeSource.connect(self.scenechangeNodeSource)
+        self.scene.nodeTarget.connect(self.scenechangeNodeTarget)
 
         self.scene.interfaceDown.connect(self.sceneInterfaceDown)
         self.scene.interfaceUp.connect(self.sceneInterfaceUp)
