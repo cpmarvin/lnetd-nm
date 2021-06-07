@@ -9,7 +9,7 @@ class Ui_changeLink(QtWidgets.QDialog):
         capacity = None
         try:
             metric = int(self.metric_txt.text())
-            capacity = int(self.capacity_txt.text()) * 1000
+            capacity = float(self.capacity_txt.text()) * 1000
         except ValueError:
             QtWidgets.QMessageBox.critical(
                 self.changeLinkMetric,
