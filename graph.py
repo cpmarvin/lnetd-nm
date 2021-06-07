@@ -286,12 +286,14 @@ class Graph:
         paths = list(nx.all_shortest_paths(G, source, target, weight="metric"))
         num_ecmp_paths = len(paths)
         demand_path = demand / num_ecmp_paths
+        if paths:
+            demand_obj.demand_path = []
         for p in paths:
             u = p[0]
             for v in p[1:]:
                 values_u_v = G[u][v].values()
                 min_weight = min(d["metric"] for d in values_u_v)
-                # path_list = f"{ source:{u} , target:{v} , metric:{min_weight} }"
+                # delete old path list
                 demand_obj.demand_path.append([u, v, min_weight])
                 ecmp_links = [
                     k for k, d in G[u][v].items() if d["metric"] == min_weight
