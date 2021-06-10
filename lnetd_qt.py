@@ -175,7 +175,7 @@ class Ui_MainWindow(object):
         # TODO fix this , should be dynamic
         """
         self.DemandTable.setHorizontalHeaderLabels(
-            ["Source", "Target", "Demand (Mbps)", "Fail to Deploy"]
+            ["Source", "Target", "Demand (Gbps)", "Fail to Deploy"]
         )
         """
         self.DemandTable.setHeaderLabels(
@@ -193,6 +193,9 @@ class Ui_MainWindow(object):
                     QtWidgets.QTableWidgetItem(str(data)),
                 )
                 """
+                # print("this is data:", column_number, data)
+                if column_number == 2:
+                    data = round(data / 1000, 2)
                 items.append(str(data))
             l1 = QtWidgets.QTreeWidgetItem(items)
             for path in row_data.demand_path:
