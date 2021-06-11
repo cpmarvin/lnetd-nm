@@ -35,10 +35,10 @@ class Interface:
 
     def utilization(self):
         """Returns utilization percent = (self.traffic/self.capacity)*100 """
-        try:
+        if self.capacity == 0:
+            return 0
+        else:
             return round((self.util / self.capacity) * 100, 3)
-        except exception:
-            return -1
 
     def get_label(self):
         return str(self.local_ip)
