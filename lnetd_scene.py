@@ -58,6 +58,7 @@ class GraphicsScene(QtWidgets.QGraphicsScene):
     addNode = QtCore.pyqtSignal(object, object, object)
     changeNodeName = QtCore.pyqtSignal(object, object)
     interfaceAdd = QtCore.pyqtSignal(object, object)
+    showPath = QtCore.pyqtSignal(object, object)
     nodeDelete = QtCore.pyqtSignal(object, object)
     nodeSource = QtCore.pyqtSignal(object, object)
     nodeTarget = QtCore.pyqtSignal(object, object)
@@ -104,6 +105,9 @@ class GraphicsScene(QtWidgets.QGraphicsScene):
     def handleInterfaceAdd(self, interfaceItem, message):
 
         self.interfaceAdd.emit(self, interfaceItem)
+
+    def handleShowPath(self, interfaceItem, message):
+        self.showPath.emit(self, interfaceItem)
 
     def handleInterfaceActionDelete(self, interfaceItem, message):
 

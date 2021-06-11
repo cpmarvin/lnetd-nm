@@ -1,9 +1,9 @@
-
 from utilities import *
-from typing import Tuple,List,Generic,Any,Dict,Callable
+from typing import Tuple, List, Generic, Any, Dict, Callable
 
 Node = Callable
 Interface = Callable
+
 
 class Node:
     """A class for working with of nodes in a graph."""
@@ -37,14 +37,14 @@ class Node:
 
     def get_neighbours(self) -> List[Node]:
         """Returns the neighbours of the node."""
-        neigh_list = [ interface.target for interface in self.interfaces ]
+        neigh_list = [interface.target for interface in self.interfaces]
         return neigh_list
 
     def get_neighbours1(self) -> Dict[Node, float]:
         """Returns the neighbours of the node."""
         neighbours = {}
         for n in self.neighbours:
-            neighbours[n['neighbour']] = n['metric']
+            neighbours[n["neighbour"]] = n["metric"]
 
         return neighbours
 
@@ -84,13 +84,18 @@ class Node:
     def export_links(self):
         exported_links = []
         for link in self.interfaces:
-            exported_links.append({"source":self.label,
-                    "target":link.target.label,
-                    "metric":link.metric,
-                    "util":link.util,
-                    "capacity":link.capacity,
-                    "local_ip":link.local_ip,
-                    "remote_ip":link.remote_ip})
+            exported_links.append(
+                {
+                    "source": self.label,
+                    "target": link.target.label,
+                    "metric": link.metric,
+                    "util": link.util,
+                    "capacity": link.capacity,
+                    "local_ip": link.local_ip,
+                    "remote_ip": link.remote_ip,
+                    "latency": link.latency,
+                }
+            )
         return exported_links
 
     def failNode(self):
@@ -103,10 +108,10 @@ class Node:
         for interface in self.interfaces:
             interface.unfailInterface()
 
-    def removeInterface(self,interface):
+    def removeInterface(self, interface):
         self.get_interfaces().remove(interface)
 
-    def get_interface_by_ip(self,local_ip):
+    def get_interface_by_ip(self, local_ip):
         for interface in self.interfaces:
             if interface.local_ip == local_ip:
                 return interface

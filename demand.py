@@ -7,7 +7,11 @@ class Demand:
     graph Nodes"""
 
     def __init__(
-        self, source: Node, target: Node, demand: float, demand_path: list = None
+        self,
+        source: Node,
+        target: Node,
+        demand: float,
+        demand_path: list = None,
     ):
         """
         :param source: The Source Node object
@@ -16,6 +20,8 @@ class Demand:
         :return: returns nothing"""
         self.source = source
         self.target = target
+        self.total_metric = 0
+        self.total_latency = 0
         self.demand = demand
         self.unrouted = False
         self.demand_path = []

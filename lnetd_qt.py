@@ -8,6 +8,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from support import load_graph, generate_link_number, load_graph_web
 
 from change_interface import Ui_changeLink
+from show_path import Ui_ShowPath
 from change_node_name import Ui_nameNode
 from lnetd_web_settings import Ui_LnetdSettings
 
@@ -179,7 +180,8 @@ class Ui_MainWindow(object):
         )
         """
         self.DemandTable.setHeaderLabels(
-            ["Source", "Target", "Demand (Mbps)", "Fail to Deploy"]
+            # ["Source", "Target", "Demand (Gbps)", "Fail to Deploy",]
+            ["Source", "Target", "Metric", "Latency", "Demand(Gbps)", "Fail"]
         )
 
         for row_number, row_data in enumerate(self.graph.demands):
@@ -194,15 +196,16 @@ class Ui_MainWindow(object):
                 )
                 """
                 # print("this is data:", column_number, data)
-                if column_number == 2:
+                if column_number == 4:
                     data = round(data / 1000, 2)
                 items.append(str(data))
             l1 = QtWidgets.QTreeWidgetItem(items)
             for path in row_data.demand_path:
                 string_output = []
-                string_output.append(f"source:{path[0].label}")
-                string_output.append(f"target:{path[1].label}")
-                string_output.append(f"metric:{path[2]}")
+                string_output.append(f"{path[0]}")
+                string_output.append(f"{path[1]}")
+                string_output.append(f"{path[2]}")
+                string_output.append(f"{path[3]}")
                 l1_1 = QtWidgets.QTreeWidgetItem(string_output)
                 l1.addChild(l1_1)
             self.DemandTable.addTopLevelItem(l1)
@@ -442,6 +445,23 @@ class Ui_MainWindow(object):
         )
         self.change_link.show()
         self.change_link.ui.interface_change.connect(self.demand_report)
+
+    def sceneShowPath(self, scene, nodeItem):
+        if len(self.scene.selectedItems()) == 2:
+            source_node = nodeItem.node
+            target_item = [
+                item for item in self.scene.selectedItems() if item != nodeItem
+            ]
+            target_node = target_item[
+                0
+            ].node  # self.graph.get_node_based_on_label('nl-p13-ams')
+            self.show_path = QDialog()
+            self.show_path.setWindowFlags(Qt.Tool)
+            self.show_path.ui = Ui_ShowPath()
+            self.show_path.ui.setupUi(
+                self.show_path, source_node, target_node, self.graph
+            )
+            self.show_path.show()
 
     def sceneAddInterface(self, scene, nodeItem):
         if len(self.scene.selectedItems()) == 2:
@@ -1018,6 +1038,12 @@ class Ui_MainWindow(object):
         self.lnetd_web.setText("LnetD Web Settings")
         self.lnetd_web.triggered.connect(self.set_lnetd_web)
 
+        self.show_latency = QtWidgets.QAction(MainWindow, checkable=True)
+        self.show_latency.setObjectName("show_latency")
+        self.show_latency.setText("Show link latency")
+        self.show_latency.setChecked(False)
+        self.show_latency.triggered.connect(self.apply_latency)
+
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionLoadTopology)
         self.menuFile.addSeparator()
@@ -1040,6 +1066,8 @@ class Ui_MainWindow(object):
         self.menuSettings.addAction(self.actionTheme)
         self.menuSettings.addSeparator()
         self.menuSettings.addAction(self.lnetd_web)
+        self.menuSettings.addSeparator()
+        self.menuSettings.addAction(self.show_latency)
 
         self.l1topology = QtWidgets.QAction(MainWindow)
         self.l1topology.setObjectName("l1topology")
@@ -1067,6 +1095,7 @@ class Ui_MainWindow(object):
         self.scene.interfaceChange.connect(self.sceneInterfaceChange)
         self.scene.interfaceAdd.connect(self.sceneAddInterface)
         self.scene.interfaceDelete.connect(self.sceneDeleteInterface)
+        self.scene.showPath.connect(self.sceneShowPath)
 
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(1)
@@ -1147,6 +1176,18 @@ class Ui_MainWindow(object):
         else:
             for item in all_scene_links:
                 item.icons = False
+
+    def apply_latency(self, state):
+        all_scene_links = [
+            item for item in self.scene.items() if isinstance(item, Link)
+        ]
+
+        if state:
+            for item in all_scene_links:
+                item.show_latency = True
+        else:
+            for item in all_scene_links:
+                item.show_latency = False
 
     def l1_model_show(self):
         self.l1_model.show()

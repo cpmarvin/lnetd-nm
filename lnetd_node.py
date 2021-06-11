@@ -187,10 +187,12 @@ class Rectangle(QtWidgets.QGraphicsItem):
             unfail_node = cmenu.addAction("Node Up")
         if len(scene.selectedItems()) == 2:
             add_interface = cmenu.addAction("Add Interface")
+            show_path = cmenu.addAction("Show Path Info")
         delete_node = cmenu.addAction("Delete Node")
         changeName = cmenu.addAction("Change Name")
         setAsSource = cmenu.addAction("Set As Source")
         setAsTarget = cmenu.addAction("Set As Target")
+
         action = cmenu.exec_(event.screenPos())
         if not self.node._failed and action == fail_node:
             self.node._failed = True
@@ -224,6 +226,8 @@ class Rectangle(QtWidgets.QGraphicsItem):
             scene.handleNodeActionSetAsTarget(
                 self, "this is a message from Node Up GraphicsItem"
             )
+        elif len(scene.selectedItems()) > 1 and action == show_path:
+            scene.handleShowPath(self, "message")
 
         self.update()
         super(Rectangle, self).contextMenuEvent(event)

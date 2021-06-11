@@ -233,6 +233,7 @@ class Graph:
         spf: str = "0",
         capacity: int = 0,
         remote_ip: str = "Node",
+        latency: int = 0,
     ):
         """Adds a vertex from node n1 to node n2"""
         interface = Interface(
@@ -243,6 +244,7 @@ class Graph:
             capacity=capacity,
             remote_ip=remote_ip,
             linknum=linknum,
+            latency=latency,
         )
         n1.interfaces.append(interface)
 
@@ -272,6 +274,53 @@ class Graph:
 
         self.calculate_components()
 
+    def ShowSpfPath(self, source: Node, target: Node):
+        total_metric = 0
+        total_latency = 0
+        e2e_path = []
+        G = nx.MultiDiGraph()
+        # node_list = [node for node in self.get_nodes() if not node._failed]
+        node_list = self.get_nodes()
+        for node in node_list:
+            for interface in node.interfaces:
+                if not interface._failed:
+                    G.add_edge(
+                        node, interface.target, **interface._networkX(), data=interface
+                    )
+        G.add_nodes_from(node_list)
+        paths = list(nx.all_shortest_paths(G, source, target, weight="metric"))
+        num_ecmp_paths = len(paths)
+        for p in paths:
+            total_metric = 0
+            total_latency = 0
+            u = p[0]
+            for v in p[1:]:
+                ecmp_max_latency = []
+                values_u_v = G[u][v].values()
+                min_weight = min(d["metric"] for d in values_u_v)
+                total_metric = total_metric + min_weight
+                # delete old path list
+                ecmp_links = [
+                    k for k, d in G[u][v].items() if d["metric"] == min_weight
+                ]
+                num_ecmp_links = len(ecmp_links)
+                for d in ecmp_links:
+                    ecmp_max_latency.append(G[u][v][d]["data"].latency)
+                    e2e_path.append(
+                        [
+                            u.label,
+                            v.label,
+                            min_weight,
+                            G[u][v][d]["data"].latency,
+                        ]
+                    )
+                total_latency = total_latency + max(ecmp_max_latency)
+                u = v
+            e2e_path.append(
+                ["-", "-", "Total:" + str(total_metric), "Total:" + str(total_latency)]
+            )
+        return [total_metric, total_latency, e2e_path]
+
     def GetSpfPath(self, source: Node, target: Node, demand: int, demand_obj: Demand):
         G = nx.MultiDiGraph()
         # node_list = [node for node in self.get_nodes() if not node._failed]
@@ -289,12 +338,16 @@ class Graph:
         if paths:
             demand_obj.demand_path = []
         for p in paths:
+            total_metric = 0
+            total_latency = 0
             u = p[0]
             for v in p[1:]:
+                ecmp_max_latency = []
                 values_u_v = G[u][v].values()
                 min_weight = min(d["metric"] for d in values_u_v)
+                total_metric = total_metric + min_weight
                 # delete old path list
-                demand_obj.demand_path.append([u, v, min_weight])
+
                 ecmp_links = [
                     k for k, d in G[u][v].items() if d["metric"] == min_weight
                 ]
@@ -302,7 +355,22 @@ class Graph:
                 for d in ecmp_links:
                     G[u][v][d]["data"].util += int(demand_path) / int(num_ecmp_links)
                     G[u][v][d]["data"]._on_spf = True
+                    ecmp_max_latency.append(G[u][v][d]["data"].latency)
+                    demand_obj.demand_path.append(
+                        [
+                            u.label,
+                            v.label,
+                            min_weight,
+                            G[u][v][d]["data"].latency,
+                        ]
+                    )
+                total_latency = total_latency + max(ecmp_max_latency)
                 u = v
+            demand_obj.demand_path.append(
+                ["-", "-", "Total:" + str(total_metric), "Total:" + str(total_latency)]
+            )
+            demand_obj.total_latency = total_latency
+            demand_obj.total_metric = total_metric
 
     def get_demands(self):
         return self.demands
