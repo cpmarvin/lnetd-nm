@@ -26,6 +26,7 @@ class Interface:
         self._on_spf = False
         self.link_num = linknum
         self.latency = latency
+        self.highlight = False
 
     def __repr__(self):
         return self.local_ip

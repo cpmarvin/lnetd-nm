@@ -274,7 +274,7 @@ class Graph:
 
         self.calculate_components()
 
-    def ShowSpfPath(self, source: Node, target: Node):
+    def ShowSpfPath(self, source: Node, target: Node, set_highlight: False):
         total_metric = 0
         total_latency = 0
         e2e_path = []
@@ -306,6 +306,15 @@ class Graph:
                 num_ecmp_links = len(ecmp_links)
                 for d in ecmp_links:
                     ecmp_max_latency.append(G[u][v][d]["data"].latency)
+                    if set_highlight:
+                        G[u][v][d]["data"].highlight = True
+                        peer_interface = self.get_peer_interface(G[u][v][d]["data"])
+                        peer_interface.highlight = True
+                    else:
+                        G[u][v][d]["data"].highlight = False
+                        peer_interface = self.get_peer_interface(G[u][v][d]["data"])
+                        peer_interface.highlight = False
+
                     e2e_path.append(
                         [
                             u.label,

@@ -192,8 +192,10 @@ class Link(QtWidgets.QGraphicsLineItem):
             | QtGui.QPainter.HighQualityAntialiasing,
             True,
         )
-
-        painter.setPen(QPen(link_color, Qt.SolidLine))
+        if self.link.highlight:
+            painter.setPen(QPen(link_color, 3, 3))
+        else:
+            painter.setPen(QPen(link_color, Qt.SolidLine))
         painter.setBrush(QBrush(link_color, Qt.SolidPattern))
 
         painter.drawPolygon(

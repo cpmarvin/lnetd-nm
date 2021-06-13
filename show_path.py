@@ -2,7 +2,17 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class Ui_ShowPath(QtWidgets.QDialog):
+    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+        self.graph.ShowSpfPath(self.source_node, self.target_node, set_highlight=False)
+        return super().closeEvent(a0)
+
+    def __init__(self, parent=None):
+        super(Ui_ShowPath, self).__init__(parent=parent)
+
     def setupUi(self, ShowPath, target_node, source_node, graph):
+        self.target_node = target_node
+        self.source_node = source_node
+        self.graph = graph
         ShowPath.setObjectName("ShowPath")
         # ShowPath.resize(465, 243)
         self.showPath = QtWidgets.QTreeWidget(ShowPath)
@@ -16,7 +26,7 @@ class Ui_ShowPath(QtWidgets.QDialog):
         self.showPath.setObjectName("showPath")
 
         try:
-            n1, n2, n3 = graph.ShowSpfPath(source_node, target_node)
+            n1, n2, n3 = graph.ShowSpfPath(source_node, target_node, set_highlight=True)
         except:
             QtWidgets.QMessageBox.critical(
                 self.showPath,

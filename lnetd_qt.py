@@ -465,12 +465,10 @@ class Ui_MainWindow(object):
             target_node = target_item[
                 0
             ].node  # self.graph.get_node_based_on_label('nl-p13-ams')
-            self.show_path = QDialog()
-            self.show_path.setWindowFlags(Qt.Tool)
-            self.show_path.ui = Ui_ShowPath()
-            self.show_path.ui.setupUi(
-                self.show_path, source_node, target_node, self.graph
-            )
+            # self.show_path = QDialog()
+            # self.show_path.setWindowFlags(Qt.Tool)
+            self.show_path = Ui_ShowPath()
+            self.show_path.setupUi(self.show_path, source_node, target_node, self.graph)
             self.show_path.show()
 
     def sceneAddInterface(self, scene, nodeItem):

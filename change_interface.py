@@ -4,6 +4,10 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_changeLink(QtWidgets.QDialog):
     interface_change = QtCore.pyqtSignal(str)
 
+    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+        print("close interface edit")
+        return super().closeEvent(a0)
+
     def change(self):
         metric = None
         capacity = None
