@@ -1,5 +1,5 @@
 import math
-
+from bisect import *
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
@@ -55,6 +55,15 @@ from node import Node
 from interface import Interface
 
 from utilities import Vector, distance
+import configparser
+
+config = configparser.ConfigParser()
+config.read("config.ini")
+
+blue_threshold = config.get("threshold", "blue_threshold")
+green_threshold = config.get("threshold", "green_threshold")
+yellow_threshold = config.get("threshold", "yellow_threshold")
+orange_threshold = config.get("threshold", "orange_threshold")
 
 
 class Link(QtWidgets.QGraphicsLineItem):
@@ -63,6 +72,12 @@ class Link(QtWidgets.QGraphicsLineItem):
         self.source_node = source_node
         self.link = link
         self.show_latency = False
+        # fix me here , set. self threshold for blue and then in paint create the dict
+        self.blue_threshold = int(blue_threshold)
+        self.green_threshold = int(green_threshold)
+        self.yellow_threshold = int(yellow_threshold)
+        self.orange_threshold = int(orange_threshold)
+
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
         self.setFlag(QtWidgets.QGraphicsItem.ItemSendsGeometryChanges)
 
@@ -96,24 +111,32 @@ class Link(QtWidgets.QGraphicsLineItem):
     def paint(self, painter, option, widget=None):
         super(Link, self).paint(painter, option, widget)
         util = self.link.utilization()
+        orangeColor = QColor(255, 165, 0)
+
+        colour_values = {
+            self.blue_threshold: QtCore.Qt.blue,
+            self.green_threshold: QtCore.Qt.green,
+            self.yellow_threshold: QtCore.Qt.yellow,
+            self.orange_threshold: orangeColor,
+        }
+
+        colour_values_list = sorted(colour_values)
+        link_color_index = bisect_left(colour_values_list, util)
+
         if self.link._failed:
             link_color = QtCore.Qt.red
         elif util == 0:
             link_color = QtCore.Qt.black
-        elif 0 < util < 30:
-            link_color = QtCore.Qt.blue
-        elif 30 <= util < 60:
-            link_color = QtCore.Qt.green
-        elif 60 <= util < 80:
-            link_color = QtCore.Qt.yellow
-        elif 80 <= util <= 100:
-            orangeColor = QColor(255, 165, 0)
-            link_color = orangeColor
         elif util > 100:
             link_color = QtCore.Qt.magenta
         else:
-            link_color = QtCore.Qt.gray
-
+            try:
+                link_color_key = colour_values_list[link_color_index]
+                link_color = colour_values[link_color_key]
+                # print(util, link_color, link_color_index, link_color_key)
+            except:
+                # guard agains <100% thresholds value
+                link_color = QtCore.Qt.magenta
         painter.save()
         painter.setFont(QFont(self.font_family, self.font_size / 3))
 

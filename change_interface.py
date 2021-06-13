@@ -10,19 +10,22 @@ class Ui_changeLink(QtWidgets.QDialog):
         try:
             metric = int(self.metric_txt.text())
             capacity = float(self.capacity_txt.text()) * 1000
+            latency = int(self.latency_txt.text())
         except ValueError:
             QtWidgets.QMessageBox.critical(
                 self.changeLinkMetric,
                 "Error!",
-                "The metric and capacity MUST be an integer !",
+                "The metric/capacity/latency MUST be a number !",
             )
-        if metric is not None or capacity is not None:
+        if metric is not None or capacity is not None or latency is not None:
             self.interface.change_metric(metric)
             self.interface.capacity = capacity
+            self.interface.latency = latency
             # if peer update is checked
             if self.update_peer_link.isChecked():
                 self.peer_interface.change_metric(metric)
                 self.peer_interface.capacity = capacity
+                self.peer_interface.latency = latency
             self.interface_change.emit("update me")
             self.changeLinkMetric.accept()
 
@@ -38,26 +41,41 @@ class Ui_changeLink(QtWidgets.QDialog):
 
         self.gridLayout = QtWidgets.QGridLayout()
         self.gridLayout.setObjectName("gridLayout")
+
         self.metric_txt = QtWidgets.QLineEdit(self.changeLinkMetric)
         self.metric_txt.setObjectName("metric_txt")
         self.gridLayout.addWidget(self.metric_txt, 3, 1, 1, 1)
+
+        self.latency_txt = QtWidgets.QLineEdit(self.changeLinkMetric)
+        self.latency_txt.setObjectName("latency_txt")
+        self.gridLayout.addWidget(self.latency_txt, 4, 1, 1, 1)
+
         self.remote_ip_lbl = QtWidgets.QLabel(self.changeLinkMetric)
         self.remote_ip_lbl.setObjectName("remote_ip_lbl")
         self.gridLayout.addWidget(self.remote_ip_lbl, 1, 0, 1, 1)
+
         self.remote_ip_txt = QtWidgets.QLineEdit(self.changeLinkMetric)
         self.remote_ip_txt.setReadOnly(True)
         self.remote_ip_txt.setObjectName("remote_ip_txt")
         self.gridLayout.addWidget(self.remote_ip_txt, 1, 1, 1, 1)
+
         self.capacity_lbl = QtWidgets.QLabel(self.changeLinkMetric)
         self.capacity_lbl.setObjectName("capacity_lbl")
         self.gridLayout.addWidget(self.capacity_lbl, 2, 0, 1, 1)
+
         self.local_ip_txt = QtWidgets.QLineEdit(self.changeLinkMetric)
         self.local_ip_txt.setReadOnly(True)
         self.local_ip_txt.setObjectName("local_ip_txt")
         self.gridLayout.addWidget(self.local_ip_txt, 0, 1, 1, 1)
+
         self.metric_lbl = QtWidgets.QLabel(self.changeLinkMetric)
         self.metric_lbl.setObjectName("metric_lbl")
         self.gridLayout.addWidget(self.metric_lbl, 3, 0, 1, 1)
+
+        self.latency_lbl = QtWidgets.QLabel(self.changeLinkMetric)
+        self.latency_lbl.setObjectName("latency_lbl")
+        self.gridLayout.addWidget(self.latency_lbl, 4, 0, 1, 1)
+
         self.capacity_txt = QtWidgets.QLineEdit(self.changeLinkMetric)
         self.capacity_txt.setObjectName("capacity_txt")
         self.gridLayout.addWidget(self.capacity_txt, 2, 1, 1, 1)
@@ -95,6 +113,10 @@ class Ui_changeLink(QtWidgets.QDialog):
         self.capacity_txt.setText(str(self.interface.capacity / 1000))
         self.metric_lbl.setText(_translate("changeLinkMetric", "Metric: "))
         self.metric_txt.setText(str(self.interface.metric))
+
+        self.latency_lbl.setText(_translate("changeLinkMetric", "Latency(ms): "))
+        self.latency_txt.setText(str(self.interface.latency))
+
         self.update_peer_link.setText(
             _translate("changeLinkMetric", "update peer link")
         )

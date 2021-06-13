@@ -1,7 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_ShowPath(object):
+class Ui_ShowPath(QtWidgets.QDialog):
     def setupUi(self, ShowPath, target_node, source_node, graph):
         ShowPath.setObjectName("ShowPath")
         # ShowPath.resize(465, 243)
@@ -14,6 +14,7 @@ class Ui_ShowPath(object):
 
         self.showPath.setGeometry(QtCore.QRect(30, 20, 550, 200))
         self.showPath.setObjectName("showPath")
+
         n1, n2, n3 = graph.ShowSpfPath(source_node, target_node)
         items = [f"{source_node.label}", f"{target_node.label}", f"{n1}", f"{n2}"]
         l1 = QtWidgets.QTreeWidgetItem(items)

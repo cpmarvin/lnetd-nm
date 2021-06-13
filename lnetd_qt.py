@@ -78,6 +78,16 @@ from PyQt5.QtWidgets import (
 
 import resources
 
+import configparser
+
+config = configparser.ConfigParser()
+config.read("config.ini")
+
+blue_threshold = config.get("threshold", "blue_threshold")
+green_threshold = config.get("threshold", "green_threshold")
+yellow_threshold = config.get("threshold", "yellow_threshold")
+orange_threshold = config.get("threshold", "orange_threshold")
+
 
 class Ui_MainWindow(object):
     def deploy_static_demand(self):
@@ -617,15 +627,16 @@ class Ui_MainWindow(object):
         self.red_legend.setStyleSheet("background-color: orange ; color: black")
         self.red_legend.setFlat(True)
         self.red_legend.setObjectName("red_legend")
-
         self.legend_grid.addWidget(self.red_legend, 0, 4, 1, 1)
-        self.green_legend = QtWidgets.QPushButton(self.legend_widget)
-        self.green_legend.setEnabled(False)
-        self.green_legend.setAutoFillBackground(True)
-        self.green_legend.setStyleSheet("background-color: blue ; color: black")
-        self.green_legend.setFlat(True)
-        self.green_legend.setObjectName("green_legend")
-        self.legend_grid.addWidget(self.green_legend, 0, 1, 1, 1)
+
+        self.blue_legend = QtWidgets.QPushButton(self.legend_widget)
+        self.blue_legend.setEnabled(False)
+        self.blue_legend.setAutoFillBackground(True)
+        self.blue_legend.setStyleSheet("background-color: blue ; color: black")
+        self.blue_legend.setFlat(True)
+        self.blue_legend.setObjectName("blue_legend")
+        self.legend_grid.addWidget(self.blue_legend, 0, 1, 1, 1)
+
         self.gray_legend = QtWidgets.QPushButton(self.legend_widget)
         self.gray_legend.setEnabled(False)
         sizePolicy = QtWidgets.QSizePolicy(
@@ -647,13 +658,15 @@ class Ui_MainWindow(object):
         self.orange_legend.setFlat(True)
         self.orange_legend.setObjectName("orange_legend")
         self.legend_grid.addWidget(self.orange_legend, 0, 3, 1, 1)
-        self.legend_2 = QtWidgets.QPushButton(self.legend_widget)
-        self.legend_2.setEnabled(False)
-        self.legend_2.setAutoFillBackground(True)
-        self.legend_2.setStyleSheet("background-color: green ; color: black")
-        self.legend_2.setFlat(True)
-        self.legend_2.setObjectName("legend_2")
-        self.legend_grid.addWidget(self.legend_2, 0, 2, 1, 1)
+
+        self.green_legend = QtWidgets.QPushButton(self.legend_widget)
+        self.green_legend.setEnabled(False)
+        self.green_legend.setAutoFillBackground(True)
+        self.green_legend.setStyleSheet("background-color: green ; color: black")
+        self.green_legend.setFlat(True)
+        self.green_legend.setObjectName("green_legend")
+        self.legend_grid.addWidget(self.green_legend, 0, 2, 1, 1)
+
         self.gridLayout_3.addLayout(self.legend_grid, 0, 0, 1, 1)
         self.verticalLayout.addWidget(self.legend_widget)
 
@@ -1105,11 +1118,11 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "LnetD - Network Model"))
         self.magenta_legend.setText(_translate("MainWindow", ">100%"))
-        self.red_legend.setText(_translate("MainWindow", "80%-100%"))
-        self.green_legend.setText(_translate("MainWindow", "0%-30%"))
+        self.red_legend.setText(_translate("MainWindow", "100%"))
+        self.blue_legend.setText(_translate("MainWindow", blue_threshold + "%"))
         self.gray_legend.setText(_translate("MainWindow", "0%"))
-        self.orange_legend.setText(_translate("MainWindow", "60%-80%"))
-        self.legend_2.setText(_translate("MainWindow", "30%-60%"))
+        self.orange_legend.setText(_translate("MainWindow", "80%"))
+        self.green_legend.setText(_translate("MainWindow", "60%"))
         self.show_interfaces.setText(
             _translate("MainWindow", "Show Network Interfaces")
         )
