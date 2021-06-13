@@ -15,7 +15,16 @@ class Ui_ShowPath(QtWidgets.QDialog):
         self.showPath.setGeometry(QtCore.QRect(30, 20, 550, 200))
         self.showPath.setObjectName("showPath")
 
-        n1, n2, n3 = graph.ShowSpfPath(source_node, target_node)
+        try:
+            n1, n2, n3 = graph.ShowSpfPath(source_node, target_node)
+        except:
+            QtWidgets.QMessageBox.critical(
+                self.showPath,
+                "Error!",
+                "No path between the nodes !",
+            )
+            return
+
         items = [f"{source_node.label}", f"{target_node.label}", f"{n1}", f"{n2}"]
         l1 = QtWidgets.QTreeWidgetItem(items)
         for path in n3:
