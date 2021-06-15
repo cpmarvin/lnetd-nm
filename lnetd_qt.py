@@ -556,9 +556,9 @@ class Ui_MainWindow(object):
         self.demand_report()
 
     def setupUi(self, MainWindow):
-        self.lnetd_web_url = "http://demo.lnetd.co.uk/api/get_topology"
-        self.lnetd_web_user = "lab"
-        self.lnetd_web_password = "lab123"
+        self.lnetd_web_url = config.get("web", "url")
+        self.lnetd_web_user = config.get("web", "user")
+        self.lnetd_web_password = config.get("web", "password")
 
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(995, 715)

@@ -85,7 +85,7 @@ def load_graph_web(lnetd_web_url, lnetd_web_user, lnetd_web_password):
                 if vertex_components.get("remote_ip")
                 else "None"
             ),
-            latency=latency,
+            latency=int(latency),
         )
     # if everything was successful, override the current graph
     return graph

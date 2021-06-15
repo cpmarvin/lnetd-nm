@@ -15,12 +15,14 @@ class Ui_changeLink(QtWidgets.QDialog):
             metric = int(self.metric_txt.text())
             capacity = float(self.capacity_txt.text()) * 1000
             latency = int(self.latency_txt.text())
-        except ValueError:
+        except ValueError as e:
+            print(e)
             QtWidgets.QMessageBox.critical(
                 self.changeLinkMetric,
                 "Error!",
-                "The metric/capacity/latency MUST be a number !",
+                "The metric/latency MUST be a integer!",
             )
+            return
         if metric is not None or capacity is not None or latency is not None:
             self.interface.change_metric(metric)
             self.interface.capacity = capacity
