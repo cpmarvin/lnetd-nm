@@ -63,7 +63,7 @@ class Rectangle(QtWidgets.QGraphicsItem):
         self.icons = False
         self.node = node
         self.node_position = self.node.get_position()
-        self.node_radius = Vector(self.node.get_radius()).repeat(2)
+        self.node_radius = Vector(self.node.get_radius() + 8).repeat(2)
 
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable)
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
@@ -135,7 +135,7 @@ class Rectangle(QtWidgets.QGraphicsItem):
         if self.icons:
             #
             # FIX ME allow images instead via config option, find proper icons for router , router_selected , router_down
-            painter.setFont(QFont(self.font_family, self.font_size / 2.2))
+            painter.setFont(QFont(self.font_family, self.font_size / 2))
             painter.drawPixmap(
                 QRect(
                     *(self.node_position - self.node_radius), *(2 * self.node_radius)
@@ -144,14 +144,14 @@ class Rectangle(QtWidgets.QGraphicsItem):
             )
             painter.drawText(
                 QRectF(
-                    *(self.node_position - self.node_radius + (-5, 25)),
+                    *(self.node_position - self.node_radius + (-5, 35)),
                     *(2 * self.node_radius + (10, 0))
                 ),
                 Qt.AlignCenter,
                 self.node.label,
             )
         else:
-            painter.setFont(QFont(self.font_family, self.font_size / 3))
+            painter.setFont(QFont(self.font_family, self.font_size / 2.2))
             painter.drawEllipse(QPointF(*self.node_position), *self.node_radius)
             painter.drawText(
                 QRectF(

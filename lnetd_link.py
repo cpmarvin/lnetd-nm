@@ -240,7 +240,7 @@ class Link(QtWidgets.QGraphicsLineItem):
 
         painter.setPen(QtGui.QPen(Qt.black, Qt.SolidLine))
         painter.drawRect(QRect(rx, ry, weight_v[0], 2 * weight_v[1]))
-        painter.setFont(QFont(self.font_family, self.font_size / 3))
+        painter.setFont(QFont(self.font_family, self.font_size / 3.3))
         painter.setPen(QPen(Qt.white, Qt.SolidLine))
         if self.show_latency:
             painter.drawText(
