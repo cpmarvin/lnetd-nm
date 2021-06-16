@@ -166,18 +166,30 @@ class Ui_MainWindow(object):
                 "DOWN",
                 "ON SPF",
                 "LINK NR",
+                "LATENCY",
+                "HIGHLIGHT",
             ]
         )
 
         for row_number, row_data in enumerate(self.graph.nodes, 0):
             for interface in row_data.interfaces:
+
                 self.LinkTable.insertRow(row_number)
                 self.LinkTable.setItem(
                     row_number, 0, QtWidgets.QTableWidgetItem(str(row_data.label))
                 )
+                print("row_number", row_number, "router", row_data.label)
                 for column_number, data in enumerate(interface.__dict__.values(), 1):
                     self.LinkTable.setItem(
                         row_number, column_number, QtWidgets.QTableWidgetItem(str(data))
+                    )
+                    print(
+                        "row_number",
+                        row_number,
+                        "column_number",
+                        column_number,
+                        "interface:",
+                        data,
                     )
 
     def update_demandtable(self):
@@ -931,7 +943,7 @@ class Ui_MainWindow(object):
         self.LinkTable.setGridStyle(QtCore.Qt.DashDotLine)
         self.LinkTable.setWordWrap(False)
         self.LinkTable.setRowCount(0)
-        self.LinkTable.setColumnCount(10)
+        self.LinkTable.setColumnCount(12)
         self.LinkTable.setObjectName("LinkTable")
         self.LinkTable.setSortingEnabled(True)
         self.LinkTable.horizontalHeader().setVisible(True)
