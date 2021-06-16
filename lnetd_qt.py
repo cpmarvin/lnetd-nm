@@ -178,18 +178,9 @@ class Ui_MainWindow(object):
                 self.LinkTable.setItem(
                     row_number, 0, QtWidgets.QTableWidgetItem(str(row_data.label))
                 )
-                print("row_number", row_number, "router", row_data.label)
                 for column_number, data in enumerate(interface.__dict__.values(), 1):
                     self.LinkTable.setItem(
                         row_number, column_number, QtWidgets.QTableWidgetItem(str(data))
-                    )
-                    print(
-                        "row_number",
-                        row_number,
-                        "column_number",
-                        column_number,
-                        "interface:",
-                        data,
                     )
 
     def update_demandtable(self):
