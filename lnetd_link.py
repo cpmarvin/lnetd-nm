@@ -127,7 +127,7 @@ class Link(QtWidgets.QGraphicsLineItem):
             link_color = QtCore.Qt.red
         elif util == 0:
             link_color = QtCore.Qt.black
-        elif util > 100:
+        elif util > int(orange_threshold):
             link_color = QtCore.Qt.magenta
         else:
             try:

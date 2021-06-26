@@ -373,6 +373,32 @@ class Ui_MainWindow(object):
                     "have permission to write to the specified file and try again!",
                 )
 
+    def export_demands_json(self):
+        path = QFileDialog.getSaveFileName()[0]
+        if path != "":
+            try:
+                with open(path, "w") as file:
+                    # TODO redo this
+                    demands_json = {}
+                    demands_json["demands"] = []
+                    # look at every pair of nodes and examine the vertices
+                    for i, n1 in enumerate(self.graph.demands):
+                        demands_json["demands"].append(
+                            {
+                                "source": n1.source.label,
+                                "target": n1.target.label,
+                                "value": n1.demand,
+                            }
+                        )
+                    json.dump(demands_json, file, sort_keys=True, indent=4)
+            except Exception as e:
+                QMessageBox.critical(
+                    self.centralwidget,
+                    "Error!",
+                    "An error occurred when exporting demands. Make sure that you "
+                    "have permission to write to the specified file and try again!",
+                )
+
     # -->handle action from emit in scene
     def sceneNodeDown(self, scene, nodeItem):
         # print('sceneNodeDown',nodeItem)
@@ -1009,23 +1035,28 @@ class Ui_MainWindow(object):
         MainWindow.setMenuBar(self.menuBar)
         self.actionLoadTopology = QtWidgets.QAction(MainWindow)
         self.actionLoadTopology.setObjectName("actionLoadTopology")
-        self.actionLoadTopology.setText("Load Topology")
+        self.actionLoadTopology.setText("Load Topology JSON")
         self.actionLoadTopology.triggered.connect(self.load_topology_json)
 
         self.actionLoadDemands = QtWidgets.QAction(MainWindow)
         self.actionLoadDemands.setObjectName("actionLoadDemands")
-        self.actionLoadDemands.setText("Load Demands")
+        self.actionLoadDemands.setText("Load Demands JSON")
         self.actionLoadDemands.triggered.connect(self.load_demands_json)
 
         self.actionLoadTopologyLnetD = QtWidgets.QAction(MainWindow)
         self.actionLoadTopologyLnetD.setObjectName("actionLoadTopology")
-        self.actionLoadTopologyLnetD.setText("Import Topology")
+        self.actionLoadTopologyLnetD.setText("Import Topology WEB")
         self.actionLoadTopologyLnetD.triggered.connect(self.load_topology_lnetd)
 
         self.actionExportTopology = QtWidgets.QAction(MainWindow)
         self.actionExportTopology.setObjectName("actionLoadDemands")
-        self.actionExportTopology.setText("Export Topology")
+        self.actionExportTopology.setText("Export Topology JSON")
         self.actionExportTopology.triggered.connect(self.export_topology_json)
+
+        self.actionExportDemands = QtWidgets.QAction(MainWindow)
+        self.actionExportDemands.setObjectName("actionExportDemands")
+        self.actionExportDemands.setText("Export Demands JSON")
+        self.actionExportDemands.triggered.connect(self.export_demands_json)
 
         self.actionQuit = QtWidgets.QAction(MainWindow)
         self.actionQuit.setObjectName("actionQuit")
@@ -1068,6 +1099,8 @@ class Ui_MainWindow(object):
         self.menuFile.addAction(self.actionLoadTopologyLnetD)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionExportTopology)
+        self.menuFile.addSeparator()
+        self.menuFile.addAction(self.actionExportDemands)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionQuit)
         self.menuFile.addSeparator()
@@ -1125,7 +1158,9 @@ class Ui_MainWindow(object):
         self.green_legend.setText(_translate("MainWindow", green_threshold + "%"))
         self.yellow_legend.setText(_translate("MainWindow", yellow_threshold + "%"))
         self.orange_legend.setText(_translate("MainWindow", orange_threshold + "%"))
-        self.magenta_legend.setText(_translate("MainWindow", ">100%"))
+        self.magenta_legend.setText(
+            _translate("MainWindow", ">" + orange_threshold + "%")
+        )
 
         self.show_interfaces.setText(
             _translate("MainWindow", "Show Network Interfaces")
@@ -1151,7 +1186,7 @@ class Ui_MainWindow(object):
             _translate("MainWindow", "Static Demands"),
         )
         self.label_4.setText(_translate("MainWindow", "Network Nodes"))
-        self.label_3.setText(_translate("MainWindow", "Network Deamnds"))
+        self.label_3.setText(_translate("MainWindow", "Network Demands"))
         self.label_5.setText(_translate("MainWindow", "Network Links"))
         self.label_6.setText(_translate("MainWindow", "Network Failed Demands"))
 
