@@ -486,6 +486,7 @@ class Ui_MainWindow(object):
         self.change_link.ui.interface_change.connect(self.demand_report)
 
     def sceneShowPath(self, scene, nodeItem):
+        self.show_path_error = QDialog()
         if len(self.scene.selectedItems()) == 2:
             source_node = nodeItem.node
             target_item = [
@@ -496,9 +497,20 @@ class Ui_MainWindow(object):
             ].node  # self.graph.get_node_based_on_label('nl-p13-ams')
             # self.show_path = QDialog()
             # self.show_path.setWindowFlags(Qt.Tool)
-            self.show_path = Ui_ShowPath()
-            self.show_path.setupUi(self.show_path, source_node, target_node, self.graph)
-            self.show_path.show()
+            try:
+                self.graph.ShowSpfPath(source_node, target_node, set_highlight=False)
+                self.show_path = Ui_ShowPath()
+                self.show_path.setupUi(
+                    self.show_path, source_node, target_node, self.graph
+                )
+                self.show_path.show()
+            except:
+                QtWidgets.QMessageBox.critical(
+                    self.show_path_error,
+                    "Error!",
+                    "No path between the nodes !",
+                )
+                return
 
     def sceneAddInterface(self, scene, nodeItem):
         if len(self.scene.selectedItems()) == 2:

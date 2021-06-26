@@ -3,7 +3,12 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_ShowPath(QtWidgets.QDialog):
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
-        self.graph.ShowSpfPath(self.source_node, self.target_node, set_highlight=False)
+        try:
+            self.graph.ShowSpfPath(
+                self.source_node, self.target_node, set_highlight=False
+            )
+        except:
+            pass
         return super().closeEvent(a0)
 
     def __init__(self, parent=None):
