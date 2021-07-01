@@ -1,6 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Set, Tuple, List, Generic, Any, Dict, Callable
+import ipdb
 
 import networkx as nx
 
@@ -341,6 +342,51 @@ class Graph:
                         node, interface.target, **interface._networkX(), data=interface
                     )
         G.add_nodes_from(node_list)
+        all_paths = list(nx.all_shortest_paths(G, source, target))
+        self._GetSpfPathList(source, target, demand, demand_obj)
+        unique_next_hop = set([p[1] for p in all_paths])
+        demand_next_hop = demand / len(unique_next_hop)
+        temp_list = []
+        for nh in unique_next_hop:
+            # print(f"***{source} will send {demand} to { nh } as {demand_next_hop}")
+            self._GetSpfPath(source, nh, demand_next_hop)
+            temp_list.append({"source": nh, "demand": demand_next_hop})
+        while len(temp_list) >= 1:
+            for i, entry in enumerate(temp_list):
+                if entry["source"] == target:
+                    temp_list.pop(i)
+                    continue
+                all_paths = list(nx.all_shortest_paths(G, entry["source"], target))
+                unique_next_hop = set([p[1] for p in all_paths])
+                demand_next_hop = entry["demand"] / len(unique_next_hop)
+                src = entry["source"]
+                for nh in unique_next_hop:
+                    self._GetSpfPath(src, nh, demand_next_hop)
+                    """
+                    for entry2 in temp_list:
+                        if entry2["source"] == nh:
+                            entry2["demand"] += demand_next_hop
+                    """
+                    temp_list.append({"source": nh, "demand": demand_next_hop})
+                temp_list.pop(i)
+
+    def _GetSpfPathList(
+        self, source: Node, target: Node, demand: int, demand_obj: Demand
+    ):
+        """
+        Used to create the path list , it's called by the new GetSpfPath that solves
+        the issue with unequal load balancing when >3 paths
+        """
+        G = nx.MultiDiGraph()
+        # node_list = [node for node in self.get_nodes() if not node._failed]
+        node_list = self.get_nodes()
+        for node in node_list:
+            for interface in node.interfaces:
+                if not interface._failed:
+                    G.add_edge(
+                        node, interface.target, **interface._networkX(), data=interface
+                    )
+        G.add_nodes_from(node_list)
         paths = list(nx.all_shortest_paths(G, source, target, weight="metric"))
         num_ecmp_paths = len(paths)
         demand_path = demand / num_ecmp_paths
@@ -362,8 +408,6 @@ class Graph:
                 ]
                 num_ecmp_links = len(ecmp_links)
                 for d in ecmp_links:
-                    G[u][v][d]["data"].util += int(demand_path) / int(num_ecmp_links)
-                    G[u][v][d]["data"]._on_spf = True
                     ecmp_max_latency.append(G[u][v][d]["data"].latency)
                     demand_obj.demand_path.append(
                         [
@@ -380,6 +424,39 @@ class Graph:
             )
             demand_obj.total_latency = total_latency
             demand_obj.total_metric = total_metric
+
+    def _GetSpfPath(self, source: Node, target: Node, demand: int):
+        """
+        Used to put demands on the links , it's called by the new GetSpfPath that solves
+        the issue with unequal load balancing when >3 paths
+        """
+        G = nx.MultiDiGraph()
+        # node_list = [node for node in self.get_nodes() if not node._failed]
+        node_list = self.get_nodes()
+        for node in node_list:
+            for interface in node.interfaces:
+                if not interface._failed:
+                    G.add_edge(
+                        node, interface.target, **interface._networkX(), data=interface
+                    )
+        G.add_nodes_from(node_list)
+
+        paths = list(nx.all_shortest_paths(G, source, target, weight="metric"))
+        num_ecmp_paths = len(paths)
+        demand_path = demand / num_ecmp_paths
+        for p in paths:
+            u = p[0]
+            for v in p[1:]:
+                values_u_v = G[u][v].values()
+                min_weight = min(d["metric"] for d in values_u_v)
+                ecmp_links = [
+                    k for k, d in G[u][v].items() if d["metric"] == min_weight
+                ]
+                num_ecmp_links = len(ecmp_links)
+                for d in ecmp_links:
+                    G[u][v][d]["data"].util += int(demand_path) / int(num_ecmp_links)
+                    G[u][v][d]["data"]._on_spf = True
+                u = v
 
     def get_demands(self):
         return self.demands

@@ -365,7 +365,6 @@ class Link(QtWidgets.QGraphicsLineItem):
         w_len = len(str(self.link.metric)) / 3 * r + r / 3
         weight_v = Vector(w_len, 2)
         weight_rectangle = QRectF(*(mid - weight_v), *(2 * weight_v))
-
         center_of_rec_x = weight_rectangle.center().x()
         center_of_rec_y = weight_rectangle.center().y()
 
