@@ -18,8 +18,10 @@ def generate_path_config():
 
     if getattr(sys, "frozen", False):
         application_path = os.path.dirname(sys.executable)
+        application_path = sys._MEIPASS
     elif __file__:
         application_path = os.path.dirname(__file__)
+        application_path = os.path.dirname(os.path.abspath(__file__))
     config_path = os.path.join(application_path, config_name)
     return config_path
 

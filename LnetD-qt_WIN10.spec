@@ -1,12 +1,7 @@
-# -*- mode: python ; coding: utf-8 -*-
-
-block_cipher = None
-
-
 a = Analysis(['lnetd_qt.py'],
-             pathex=['C:\\Users\\lab\\Downloads\\Lnetd-build'],
+             pathex=['C:\\Users\\cpetr\\Downloads\\lnetd_qt-dev_latency\\lnetd_qt-dev_latency'],
              binaries=[],
-             datas=[],
+             datas=[('./config.ini','.')],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],

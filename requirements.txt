@@ -1,0 +1,4 @@
+ipdb
+PyQt5
+networkx
+requests
