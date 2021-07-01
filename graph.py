@@ -275,6 +275,23 @@ class Graph:
 
         self.calculate_components()
 
+    def return_next_hops(self, all_paths, G):
+        unique_next_hops = {}
+        source = all_paths[0][0]
+        unique_paths = set([p[1] for p in all_paths])
+        unique_paths_list = [
+            *unique_paths,
+        ]
+        for n1 in unique_paths_list:
+            u = all_paths[0][0]
+            v = n1
+            values_u_v = G[u][v].values()
+            min_weight = min(d["metric"] for d in values_u_v)
+            ecmp_links = [k for k, d in G[u][v].items() if d["metric"] == min_weight]
+            num_ecmp_links = len(ecmp_links)
+            unique_next_hops[v] = num_ecmp_links
+        return unique_next_hops
+
     def ShowSpfPath(self, source: Node, target: Node, set_highlight: False):
         total_metric = 0
         total_latency = 0
@@ -342,40 +359,63 @@ class Graph:
                         node, interface.target, **interface._networkX(), data=interface
                     )
         G.add_nodes_from(node_list)
-        all_paths = list(nx.all_shortest_paths(G, source, target))
-        self._GetSpfPathList(source, target, demand, demand_obj)
-        unique_next_hop = set([p[1] for p in all_paths])
-        demand_next_hop = demand / len(unique_next_hop)
+        all_paths = list(nx.all_shortest_paths(G, source, target, weight="metric"))
+        self._GetSpfPathList(source, target, demand, demand_obj, G)
+        unique_next_hop = self.return_next_hops(
+            all_paths, G
+        )  # set([p[1] for p in all_paths])
+
+        demand_next_hop = demand / sum(unique_next_hop.values())
+        # print("first all_paths", all_paths)
+        # print("first unique all next hops", unique_next_hop)
+        # print("first demands per next hop", demand_next_hop)
         temp_list = []
-        for nh in unique_next_hop:
-            # print(f"***{source} will send {demand} to { nh } as {demand_next_hop}")
-            self._GetSpfPath(source, nh, demand_next_hop)
-            temp_list.append({"source": nh, "demand": demand_next_hop})
+        for nh, values in unique_next_hop.items():
+            """
+            print(
+                f"***{source} will send {demand} to { nh } as {demand_next_hop * values}"
+            )
+            """
+            self._GetSpfPath(source, nh, demand_next_hop * values, G)
+            temp_list.append({"source": nh, "demand": demand_next_hop * values})
         while len(temp_list) >= 1:
             for i, entry in enumerate(temp_list):
+                # print(entry, target)
                 if entry["source"] == target:
                     temp_list.pop(i)
                     continue
-                all_paths = list(nx.all_shortest_paths(G, entry["source"], target))
-                unique_next_hop = set([p[1] for p in all_paths])
-                demand_next_hop = entry["demand"] / len(unique_next_hop)
+                all_paths = list(
+                    nx.all_shortest_paths(G, entry["source"], target, weight="metric")
+                )
+                unique_next_hop = self.return_next_hops(
+                    all_paths, G
+                )  # set([p[1] for p in all_paths])
+                demand_next_hop = entry["demand"] / sum(unique_next_hop.values())
+                # print("all_paths", all_paths)
+                # print("unique all next hops", unique_next_hop)
+                # print("demands per next hop", demand_next_hop)
                 src = entry["source"]
-                for nh in unique_next_hop:
-                    self._GetSpfPath(src, nh, demand_next_hop)
+                for nh, values in unique_next_hop.items():
+                    self._GetSpfPath(src, nh, demand_next_hop * values, G)
                     """
                     for entry2 in temp_list:
                         if entry2["source"] == nh:
                             entry2["demand"] += demand_next_hop
+                    
+                    print(
+                        f"***{src} will send {demand} to { nh } as {demand_next_hop * values}"
+                    )
                     """
-                    temp_list.append({"source": nh, "demand": demand_next_hop})
+                    temp_list.append({"source": nh, "demand": demand_next_hop * values})
                 temp_list.pop(i)
 
     def _GetSpfPathList(
-        self, source: Node, target: Node, demand: int, demand_obj: Demand
+        self, source: Node, target: Node, demand: int, demand_obj: Demand, G
     ):
         """
         Used to create the path list , it's called by the new GetSpfPath that solves
         the issue with unequal load balancing when >3 paths
+        """
         """
         G = nx.MultiDiGraph()
         # node_list = [node for node in self.get_nodes() if not node._failed]
@@ -387,6 +427,7 @@ class Graph:
                         node, interface.target, **interface._networkX(), data=interface
                     )
         G.add_nodes_from(node_list)
+        """
         paths = list(nx.all_shortest_paths(G, source, target, weight="metric"))
         num_ecmp_paths = len(paths)
         demand_path = demand / num_ecmp_paths
@@ -425,10 +466,11 @@ class Graph:
             demand_obj.total_latency = total_latency
             demand_obj.total_metric = total_metric
 
-    def _GetSpfPath(self, source: Node, target: Node, demand: int):
+    def _GetSpfPath(self, source: Node, target: Node, demand: int, G):
         """
         Used to put demands on the links , it's called by the new GetSpfPath that solves
         the issue with unequal load balancing when >3 paths
+        """
         """
         G = nx.MultiDiGraph()
         # node_list = [node for node in self.get_nodes() if not node._failed]
@@ -440,8 +482,8 @@ class Graph:
                         node, interface.target, **interface._networkX(), data=interface
                     )
         G.add_nodes_from(node_list)
-
-        paths = list(nx.all_shortest_paths(G, source, target, weight="metric"))
+        """
+        paths = list(nx.all_shortest_paths(G, source, target))
         num_ecmp_paths = len(paths)
         demand_path = demand / num_ecmp_paths
         for p in paths:
