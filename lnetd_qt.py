@@ -5,7 +5,12 @@ import json
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from support import load_graph, generate_link_number, load_graph_web
+from support import (
+    load_graph,
+    generate_link_number,
+    load_graph_web,
+    generate_path_config,
+)
 
 from change_interface import Ui_changeLink
 from show_path import Ui_ShowPath
@@ -80,8 +85,10 @@ import resources
 
 import configparser
 
+file_path = generate_path_config()
+
 config = configparser.ConfigParser()
-config.read("config.ini")
+config.read(file_path)
 
 blue_threshold = config.get("threshold", "blue_threshold")
 green_threshold = config.get("threshold", "green_threshold")
@@ -974,7 +981,7 @@ class Ui_MainWindow(object):
         self.LinkTable.setRowCount(0)
         self.LinkTable.setColumnCount(12)
         self.LinkTable.setObjectName("LinkTable")
-        self.LinkTable.setSortingEnabled(True)
+        self.LinkTable.setSortingEnabled(False)
         self.LinkTable.horizontalHeader().setVisible(True)
         self.LinkTable.horizontalHeader().setCascadingSectionResizes(True)
         self.LinkTable.horizontalHeader().setSectionResizeMode(

@@ -1,7 +1,7 @@
 import math
 from bisect import *
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+from support import generate_path_config
 
 from PyQt5.QtCore import (
     Qt,
@@ -57,8 +57,11 @@ from interface import Interface
 from utilities import Vector, distance
 import configparser
 
+file_path = generate_path_config()
+
+
 config = configparser.ConfigParser()
-config.read("config.ini")
+config.read(file_path)
 
 blue_threshold = config.get("threshold", "blue_threshold")
 green_threshold = config.get("threshold", "green_threshold")

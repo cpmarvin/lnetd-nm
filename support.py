@@ -9,6 +9,20 @@ from random import randint
 import pprint
 import requests
 
+import os
+import sys
+
+
+def generate_path_config():
+    config_name = "config.ini"
+
+    if getattr(sys, "frozen", False):
+        application_path = os.path.dirname(sys.executable)
+    elif __file__:
+        application_path = os.path.dirname(__file__)
+    config_path = os.path.join(application_path, config_name)
+    return config_path
+
 
 def load_graph_web(lnetd_web_url, lnetd_web_user, lnetd_web_password):
     """load json and return the graph()"""
