@@ -1,5 +1,5 @@
-
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_nameNode(QtWidgets.QDialog):
     node_change = QtCore.pyqtSignal(str)
@@ -7,7 +7,7 @@ class Ui_nameNode(QtWidgets.QDialog):
     def change(self):
         new_label = str(self.node_name_txt.text())
         self.node.label = new_label
-        self.node_change.emit('update me')
+        self.node_change.emit("update me")
         self.changeNodeLabel.accept()
 
     def setupUi(self, changeNodeLabel, node):
@@ -49,5 +49,4 @@ class Ui_nameNode(QtWidgets.QDialog):
         self.save_btn.setText(_translate("changeNodeLabel", "Save"))
         self.node_name_lbl.setText(_translate("changeNodeLabel", "Node Label"))
         self.node_name_txt.setText(str(self.node.label))
-
-
+        self.node_name_txt.selectAll()
