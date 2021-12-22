@@ -6,12 +6,20 @@ class Ui_nameNode(QtWidgets.QDialog):
 
     def change(self):
         new_label = str(self.node_name_txt.text())
-        self.node.label = new_label
-        self.node_change.emit("update me")
-        self.changeNodeLabel.accept()
+        if new_label in self.graph.get_nodes_label() and self.node.label != new_label:
+            QtWidgets.QMessageBox.critical(
+                self.changeNodeLabel,
+                "Error!",
+                "A node with same label existis in the model.",
+            )
+        else:
+            self.node.label = new_label
+            self.node_change.emit("update me")
+            self.changeNodeLabel.accept()
 
-    def setupUi(self, changeNodeLabel, node):
+    def setupUi(self, changeNodeLabel, node, graph):
         self.node = node
+        self.graph = graph
         self.changeNodeLabel = changeNodeLabel
         self.changeNodeLabel.setObjectName("changeNodeLabel")
         self.changeNodeLabel.resize(250, 150)

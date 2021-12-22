@@ -466,7 +466,7 @@ class Ui_MainWindow(object):
         node = nodeItem.node
         self.change_node = QDialog()
         self.change_node.ui = Ui_nameNode()
-        self.change_node.ui.setupUi(self.change_node, node)
+        self.change_node.ui.setupUi(self.change_node, node, self.graph)
         self.change_node.show()
         self.change_node.ui.node_change.connect(self.demand_report)
 
