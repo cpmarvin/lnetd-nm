@@ -24,4 +24,5 @@ class Demand:
         self.total_latency = 0
         self.demand = demand
         self.unrouted = False
+        self.degraded = False
         self.demand_path = []

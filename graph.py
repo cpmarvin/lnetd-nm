@@ -376,7 +376,7 @@ class Graph:
                 f"***{source} will send {demand} to { nh } as {demand_next_hop * values}"
             )
             """
-            self._GetSpfPath(source, nh, demand_next_hop * values, G)
+            self._GetSpfPath(source, nh, demand_next_hop * values, G, demand_obj)
             temp_list.append({"source": nh, "demand": demand_next_hop * values})
         while len(temp_list) >= 1:
             for i, entry in enumerate(temp_list):
@@ -396,7 +396,7 @@ class Graph:
                 # print("demands per next hop", demand_next_hop)
                 src = entry["source"]
                 for nh, values in unique_next_hop.items():
-                    self._GetSpfPath(src, nh, demand_next_hop * values, G)
+                    self._GetSpfPath(src, nh, demand_next_hop * values, G, demand_obj)
                     """
                     for entry2 in temp_list:
                         if entry2["source"] == nh:
@@ -466,7 +466,9 @@ class Graph:
             demand_obj.total_latency = total_latency
             demand_obj.total_metric = total_metric
 
-    def _GetSpfPath(self, source: Node, target: Node, demand: int, G):
+    def _GetSpfPath(
+        self, source: Node, target: Node, demand: int, G, demand_obj: Demand
+    ):
         """
         Used to put demands on the links , it's called by the new GetSpfPath that solves
         the issue with unequal load balancing when >3 paths
@@ -497,6 +499,8 @@ class Graph:
                 num_ecmp_links = len(ecmp_links)
                 for d in ecmp_links:
                     G[u][v][d]["data"].util += int(demand_path) / int(num_ecmp_links)
+                    if G[u][v][d]["data"].util > G[u][v][d]["data"].capacity:
+                        demand_obj.degraded = True
                     G[u][v][d]["data"]._on_spf = True
                 u = v
 

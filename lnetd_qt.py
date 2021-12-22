@@ -201,7 +201,15 @@ class Ui_MainWindow(object):
         """
         self.DemandTable.setHeaderLabels(
             # ["Source", "Target", "Demand (Gbps)", "Fail to Deploy",]
-            ["Source", "Target", "Metric", "Latency", "Demand(Gbps)", "Fail"]
+            [
+                "Source",
+                "Target",
+                "Metric",
+                "Latency",
+                "Demand(Gbps)",
+                "Fail",
+                "Degraded",
+            ]
         )
 
         for row_number, row_data in enumerate(self.graph.demands):
