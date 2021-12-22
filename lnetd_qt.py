@@ -883,6 +883,7 @@ class Ui_MainWindow(object):
 
         self.additive = QtWidgets.QCheckBox(self.static_demands_tab)
         self.additive.setObjectName("additive")
+        self.additive.setChecked(1)
         self.static_demands_layout.addWidget(self.additive)
 
         # self.demand_warning = QtWidgets.QCheckBox(self.static_demands_tab)
