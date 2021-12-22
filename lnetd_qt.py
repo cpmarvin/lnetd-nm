@@ -344,13 +344,14 @@ class Ui_MainWindow(object):
     def load_demands_json(self):
         """Load Demand from Json File
         This is called when load demands button from main app is clicked"""
-        # FIX ME , allow json load , this is temp for now.
         path = QFileDialog.getOpenFileName()[0]
         if path != "":
             try:
                 with open(path, "r") as file:
+                    # clear existing demand if additive is not checked
+                    if not self.additive.isChecked():
+                        self.graph.remove_all_demands()
                     demands = json.load(file)
-
                     for demand in demands["demands"]:
                         source_node = demand["source"]
                         target_target = demand["target"]
