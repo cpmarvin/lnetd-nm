@@ -540,21 +540,27 @@ class Ui_MainWindow(object):
             subnet = random.sample(range(0, 210), 3)
             ip1 = "{}.{}.{}.{}".format(*subnet + [1])
             ip2 = "{}.{}.{}.{}".format(*subnet + [2])
+            metric=10
+            capacity=1000
+            existing_link,existing_link_exists = self.graph.return_vertex_ifexist(source_node,target_node)
+            if existing_link_exists:
+                metric=existing_link[0].metric
+                capacity=existing_link[0].capacity
             interface_source_target = Interface(
                 target=target_node,
-                metric=10,
+                metric=metric,
                 local_ip=ip1,
                 util=0,
-                capacity=1000,
+                capacity=capacity,
                 remote_ip=ip2,
                 linknum=1,
             )
             interface_target_source = Interface(
                 target=source_node,
-                metric=10,
+                metric=metric,
                 local_ip=ip2,
                 util=0,
-                capacity=1000,
+                capacity=capacity,
                 remote_ip=ip1,
                 linknum=1,
             )

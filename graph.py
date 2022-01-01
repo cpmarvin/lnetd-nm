@@ -255,6 +255,13 @@ class Graph:
             (not self.directed or ignore_direction) and n1 in n2.get_neighbours()
         )
 
+    def return_vertex_ifexist(self, n1: Node, n2: Node ) -> Interface:
+        """Returns True if a vertex exists between the two nodes and False otherwise."""
+        result  = [ interface for interface in n2.interfaces if interface.target == n1 ]
+        if len(result) >= 1:
+            return result,True
+        return result,False
+
     def toggle_vertex(self, n1: Node, n2: Node):
         """Toggles a connection between to vertexes."""
         if self.does_vertex_exist(n1, n2):
