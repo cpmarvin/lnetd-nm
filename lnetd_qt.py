@@ -208,7 +208,7 @@ class Ui_MainWindow(object):
                 "Latency",
                 "Demand(Gbps)",
                 "Fail",
-                "Degraded",
+                "Degraded"
             ]
         )
 
@@ -223,7 +223,6 @@ class Ui_MainWindow(object):
                     QtWidgets.QTableWidgetItem(str(data)),
                 )
                 """
-                # print("this is data:", column_number, data)
                 if column_number == 4:
                     data = round(data / 1000, 2)
                 items.append(str(data))
@@ -1016,30 +1015,18 @@ class Ui_MainWindow(object):
         self.demand_tab_layout = QtWidgets.QGridLayout(self.demand_tab)
         self.demand_tab_layout.setContentsMargins(2, 2, 2, 2)
         self.demand_tab_layout.setObjectName("model_info_layout")
-
-        # self.DemandTable = QtWidgets.QTableWidget()
-        self.DemandTable = QtWidgets.QTreeWidget()
-        # self.DemandTable.setGeometry(QtCore.QRect(-5, 1, 951, 201))
+        # add demandTable
+        self.DemandTable = QtWidgets.QTreeWidget() #demandTable() # QtWidgets.QTreeWidget()
+        self.DemandTable.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.DemandTable.customContextMenuRequested.connect(self.DemandTableMenu)
         self.DemandTable.setObjectName("DemandTable")
-        # self.DemandTable.setSizePolicy(sizePolicy)
-        # self.DemandTable.setMaximumSize(QtCore.QSize(481, 16777215))
-
         self.DemandTable.setSizeAdjustPolicy(
             QtWidgets.QAbstractScrollArea.AdjustToContents
         )
-        # self.DemandTable.setGridStyle(QtCore.Qt.DashDotLine)
         self.DemandTable.setWordWrap(False)
-        # self.DemandTable.setRowCount(3)
-        # self.DemandTable.setColumnCount(4)
         self.DemandTable.setObjectName("DemandTable")
-        # self.DemandTable.horizontalHeader().setVisible(True)
-        # self.DemandTable.horizontalHeader().setCascadingSectionResizes(True)
-        # self.DemandTable.horizontalHeader().setSectionResizeMode(
-        #    QtWidgets.QHeaderView.Stretch
-        # )
-        # self.DemandTable.verticalHeader().setVisible(False)
         self.DemandTable.expandAll()
-
+        # add demandTable to layout
         self.demand_tab_layout.addWidget(self.DemandTable)
         self.tabWidget.addTab(self.demand_tab, "")
 
@@ -1184,6 +1171,27 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def DemandTableMenu(self,point):
+        '''Custom Context menu for Demand table
+        used to delete and modify demands'''
+        index = self.DemandTable.indexAt(point)
+        if not index.isValid():
+            return
+        item = self.DemandTable.itemAt(point)
+        menu = QtWidgets.QMenu()
+        if item is not None and item.childCount() != 0:
+            removeAction = menu.addAction('Remove')
+            #TODO editAction = menu.addAction('Edit')
+            action = menu.exec_(self.DemandTable.mapToGlobal(point))
+            if action == removeAction:
+                self.DemandTableRemoveAction(item)
+    def DemandTableRemoveAction(self,item):
+        node_source = item.data(0,0)
+        node_target = item.data(1,0)
+        self.graph.edit_demand(node_source,node_target,0,delete=True)
+        self.demand_report()
+
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
