@@ -1056,6 +1056,10 @@ class Ui_MainWindow(object):
         self.menuView.setObjectName("view")
         self.menuView.setTitle("View")
 
+        self.menuAbout = QtWidgets.QMenu(self.menuBar)
+        self.menuAbout.setObjectName("About")
+        self.menuAbout.setTitle("About")
+
         MainWindow.setMenuBar(self.menuBar)
         self.actionLoadTopology = QtWidgets.QAction(MainWindow)
         self.actionLoadTopology.setObjectName("actionLoadTopology")
@@ -1150,9 +1154,18 @@ class Ui_MainWindow(object):
         self.menuView.addSeparator()
         self.menuView.addAction(self.l1topology)
 
+        self.aboutInfo = QtWidgets.QAction(MainWindow)
+        self.aboutInfo.setObjectName("About")
+        self.aboutInfo.setText("Info")
+        self.aboutInfo.triggered.connect(self.about_show)  # fixme
+
+        self.menuAbout.addSeparator()
+        self.menuAbout.addAction(self.aboutInfo)
+
         self.menuBar.addAction(self.menuFile.menuAction())
         self.menuBar.addAction(self.menuSettings.menuAction())
         self.menuBar.addAction(self.menuView.menuAction())
+        self.menuBar.addAction(self.menuAbout.menuAction())
 
         # --> Slots
         self.scene.nodeDown.connect(self.sceneNodeDown)
@@ -1288,6 +1301,12 @@ class Ui_MainWindow(object):
 
     def l1_model_show(self):
         self.l1_model.show()
+
+    def about_show(self):
+        message = (
+                    "Quick how-to at: https://github.com/cpmarvin/lnetd_qt/blob/master/examples/LnetD-QT.pdf <a href='https://github.com/cpmarvin/lnetd_qt/blob/master/examples/LnetD-QT.pdf'>Here</a> "
+                )
+        QMessageBox.information(self.centralwidget, "About", message)
 
     def load_l1_topology(self):
         path = QFileDialog.getOpenFileName()[0]
