@@ -177,8 +177,8 @@ class Graph:
         target_node = self.get_node_based_on_label(target)
         for existing_demand in self.demands:
             if (
-                source_node == existing_demand.source
-                and target_node == existing_demand.target
+                source == existing_demand.source.label
+                and target == existing_demand.target.label
             ):
                 if delete:
                     self.demands.remove(existing_demand)
