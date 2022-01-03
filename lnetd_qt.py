@@ -47,6 +47,7 @@ from PyQt5.QtCore import (
     QPoint,
     QLineF,
     pyqtSlot,
+    QFileInfo
 )
 from PyQt5.QtGui import (
     QPainter,
@@ -285,6 +286,7 @@ class Ui_MainWindow(object):
                     self.scene.addItem(custome_rect)
                 self.update_demandtable()
                 self.demand_report()
+                MainWindow.setWindowTitle("LnetD - Network Model" + ": " + QFileInfo(path).fileName() )
             except UnicodeDecodeError:
                 QMessageBox.critical(
                     self.centralwidget, "Error!", "Can't read binary files!"
