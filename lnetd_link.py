@@ -197,8 +197,11 @@ class Link(QtWidgets.QGraphicsLineItem):
         )
         if self.link.highlight:
             painter.setPen(QPen(link_color, 3, 3))
+        elif option.state & QtWidgets.QStyle.State_Selected:
+            painter.setPen(QPen(link_color, 2, 4))
         else:
             painter.setPen(QPen(link_color, Qt.SolidLine))
+
         painter.setBrush(QBrush(link_color, Qt.SolidPattern))
 
         painter.drawPolygon(
