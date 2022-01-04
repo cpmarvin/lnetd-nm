@@ -29,6 +29,7 @@ from lnetd_scene import GraphicsScene
 from lnetd_view import GraphicsView
 from lnetd_link import Link
 from lnetd_node import Rectangle
+from lnetd_group import LnetdGroup
 
 # L1 Model
 from l1_widget import Ui_L1_Widget
@@ -479,6 +480,16 @@ class Ui_MainWindow(object):
     def scenechangeNodeTarget(self, scene, nodeItem):
         node = nodeItem.node
         self.target_txt.setText(str(node.label))
+
+    def scenechangeNodeGroup(self, scene, nodeItem):
+        #print(event.scenePos().x(), event.scenePos().y())
+        group1 = LnetdGroup(nodeItem,scene)
+        for n in self.scene.selectedItems():
+            if isinstance(n, Rectangle):
+                n.hide()
+                n.setSelected(False)
+                n.setParentItem(group1)
+        self.scene.addItem(group1)
 
     def sceneInterfaceDown(self, scene, InterfaceItem):
         interface_down = InterfaceItem
@@ -1175,6 +1186,7 @@ class Ui_MainWindow(object):
         self.scene.changeNodeName.connect(self.scenechangeNodeName)
         self.scene.nodeSource.connect(self.scenechangeNodeSource)
         self.scene.nodeTarget.connect(self.scenechangeNodeTarget)
+        self.scene.nodeGroup.connect(self.scenechangeNodeGroup)
 
         self.scene.interfaceDown.connect(self.sceneInterfaceDown)
         self.scene.interfaceUp.connect(self.sceneInterfaceUp)

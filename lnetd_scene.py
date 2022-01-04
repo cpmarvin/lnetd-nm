@@ -62,6 +62,7 @@ class GraphicsScene(QtWidgets.QGraphicsScene):
     nodeDelete = QtCore.pyqtSignal(object, object)
     nodeSource = QtCore.pyqtSignal(object, object)
     nodeTarget = QtCore.pyqtSignal(object, object)
+    nodeGroup = QtCore.pyqtSignal(object, object)
 
     def __init__(self, parent=None):
         super(GraphicsScene, self).__init__(parent)
@@ -126,6 +127,10 @@ class GraphicsScene(QtWidgets.QGraphicsScene):
 
     def handleNodeActionSetAsTarget(self, nodeItem, message):
         self.nodeTarget.emit(self, nodeItem)
+
+    def handleNodeActionSetAsGroup(self, nodeItem, message):
+        self.nodeGroup.emit(self, nodeItem)
+
 
     def contextMenuEvent(self, event):
         item = self.itemAt(

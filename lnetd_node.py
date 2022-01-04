@@ -181,53 +181,72 @@ class Rectangle(QtWidgets.QGraphicsItem):
     def contextMenuEvent(self, event):
         scene = self.scene()
         cmenu = QMenu()
-        if not self.node._failed:
+        selected_nodes = [item for item in scene.selectedItems() if isinstance(item,Rectangle)]
+        if not self.node._failed and len(scene.selectedItems()) <= 1:
             fail_node = cmenu.addAction("Node Down")
-        else:
+        elif self.node._failed and len(scene.selectedItems()) <= 1:
             unfail_node = cmenu.addAction("Node Up")
-        if len(scene.selectedItems()) == 2:
+        if len(scene.selectedItems()) <= 1:
+            delete_node = cmenu.addAction("Delete Node")
+            changeName = cmenu.addAction("Change Name")
+            setAsSource = cmenu.addAction("Set As Source")
+            setAsTarget = cmenu.addAction("Set As Target")
+        if len(selected_nodes) == 2:
             add_interface = cmenu.addAction("Add Interface")
             show_path = cmenu.addAction("Show Path Info")
-        delete_node = cmenu.addAction("Delete Node")
-        changeName = cmenu.addAction("Change Name")
-        setAsSource = cmenu.addAction("Set As Source")
-        setAsTarget = cmenu.addAction("Set As Target")
+            setAsGroup = cmenu.addAction("Group")
+        if len(selected_nodes) > 2:
+            setAsGroup = cmenu.addAction("Group")
 
         action = cmenu.exec_(event.screenPos())
-        if not self.node._failed and action == fail_node:
-            self.node._failed = True
-            if scene is not None:
-                scene.handleNodeActionDown(
+        if len(scene.selectedItems()) <=1:
+            if not self.node._failed and action == fail_node:
+                self.node._failed = True
+                #print('fail node')
+                if scene is not None:
+                    scene.handleNodeActionDown(
                     self, "this is a message from Node Down GraphicsItem "
                 )
-        elif self.node._failed and action == unfail_node:
-            self.node._failed = False
-            if scene is not None:
-                scene.handleNodeActionUp(
+            elif self.node._failed and action == unfail_node:
+                self.node._failed = False
+                #print('unfail node')
+                if scene is not None:
+                    scene.handleNodeActionUp(
                     self, "this is a message from Node Up GraphicsItem"
                 )
-        elif action == changeName:
-            scene.handlechangeNodeName(
-                self, "this is a message from NodeNameChange GraphicsItem"
-            )
-        elif len(scene.selectedItems()) > 1 and action == add_interface:
-            scene.handleInterfaceAdd(
-                self, "this is a message from interfaceAdd GraphicsItem"
-            )
-        elif action == delete_node:
-            scene.handleNodeActionDelete(
-                self, "this is a message from Node Up GraphicsItem"
-            )
-        elif action == setAsSource:
-            scene.handleNodeActionSetAsSource(
-                self, "this is a message from Node Up GraphicsItem"
-            )
-        elif action == setAsTarget:
-            scene.handleNodeActionSetAsTarget(
-                self, "this is a message from Node Up GraphicsItem"
-            )
-        elif len(scene.selectedItems()) > 1 and action == show_path:
-            scene.handleShowPath(self, "message")
+            elif action == changeName:
+                #print('change name')
+                scene.handlechangeNodeName(
+                self, "this is a message from NodeNameChange GraphicsItem")
 
+            elif action == delete_node:
+                #print('delete node')
+                scene.handleNodeActionDelete(
+                self, "this is a message from Node Up GraphicsItem")
+            elif action == setAsSource:
+                #print('set as source')
+                scene.handleNodeActionSetAsSource(
+                self, "this is a message from Node Up GraphicsItem")
+            elif action == setAsTarget:
+                #print('set as target')
+                scene.handleNodeActionSetAsTarget(
+                self, "this is a message from Node Up GraphicsItem")
+        elif len(scene.selectedItems()) == 2:
+            if action == add_interface:
+                #print('add interface')
+                scene.handleInterfaceAdd(
+                self, "this is a message from interfaceAdd GraphicsItem")
+            elif  action == show_path:
+                #print('show path')
+                scene.handleShowPath(self, "message")
+            elif action == setAsGroup:
+                #print('group')
+                scene.handleNodeActionSetAsGroup(
+                 self, "message from setAsGroup")
+        elif len(scene.selectedItems()) > 1:
+            if action == setAsGroup:
+                #print('group')
+                scene.handleNodeActionSetAsGroup(
+                 self, "message from setAsGroup")
         self.update()
         super(Rectangle, self).contextMenuEvent(event)
