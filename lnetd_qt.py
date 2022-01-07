@@ -486,7 +486,7 @@ class Ui_MainWindow(object):
         group1 = LnetdGroup(nodeItem,scene)
         for n in self.scene.selectedItems():
             if isinstance(n, Rectangle):
-                n.hide()
+                #n.hide()
                 n.setSelected(False)
                 n.setParentItem(group1)
         self.scene.addItem(group1)

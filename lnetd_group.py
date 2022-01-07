@@ -65,11 +65,12 @@ class LnetdGroup(QGraphicsItemGroup):
         #self.setFlag(QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
         #self.setZValue(0)
         self.scene = scene
+        self.hide = False
         #self.setHandlesChildEvents(false)
         #self.setFlag(QGraphicsItemGroup.ItemClipsChildrenToShape)
     def boundingRect(self):
         #return self.childrenBoundingRect()
-        return self.childrenBoundingRect().adjusted(0, 0, -20, -20)
+        return self.childrenBoundingRect().adjusted(0, 0, 0, 0)
 
     def shape1(self):
         """this is the selection area and colision detection"""
@@ -84,12 +85,20 @@ class LnetdGroup(QGraphicsItemGroup):
               painter: QtGui.QPainter,
               option: QtWidgets.QStyleOptionGraphicsItem,
               widget: QtWidgets.QWidget = None):
+        img_png = QtGui.QPixmap(":/icons/router.png")
         painter.setPen(QtGui.QPen(QtCore.Qt.NoPen))
         painter.setBrush(QtGui.QBrush(QtCore.Qt.gray))
         r = self.boundingRect();
         #print(r)
         #painter.drawRect(QRect(10,10,10,10))
-        painter.drawRect(QRect(r.x(), r.y(), r.width(), r.height()))
+        #painter.drawRect(QRect(r.x(), r.y(), r.width(), r.height()))
+        if self.hide:
+            painter.setOpacity(1)
+            painter.drawRect(QRect(r.x(), r.y(), r.width(), r.height()))
+        else:
+            painter.setOpacity(0.5)
+            painter.drawRect(QRect(r.x(), r.y(), r.width(), r.height()))
+
 
 
     def itemChange(self, change, value):
@@ -109,10 +118,24 @@ class LnetdGroup(QGraphicsItemGroup):
         return value
 
     def contextMenuEvent(self, event):
-        cmenu = QMenu()
-        un_group = cmenu.addAction("Un-Group")
-        action = cmenu.exec_(event.screenPos())
-        if action == un_group:
+        self.cmenu = QMenu()
+        un_group = self.cmenu.addAction("Un-Group")
+        if self.hide:
+            un_hide = self.cmenu.addAction("Un-Hide")
+            un_hide.setText('Un-hide Nodes')
+        else:
+            hide = self.cmenu.addAction("Hide")
+            hide.setText('Hide Nodes')
+        action = self.cmenu.exec_(event.screenPos())
+        if action.text() == 'Un-hide Nodes':
+            for item in self.childItems():
+                item.show()
+            self.hide = False
+        elif action == hide:
+            for item in self.childItems():
+                item.hide()
+            self.hide = True
+        elif action == un_group:
             for item in self.childItems():
                 self.removeFromGroup(item)
                 self.scene.removeItem(item)
