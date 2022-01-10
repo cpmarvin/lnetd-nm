@@ -184,6 +184,19 @@ class Graph:
                     self.demands.remove(existing_demand)
                 else:
                     existing_demand.demand = demand
+    def enableDemand(self,source:str,target:str,enable=True):
+        '''Activate or deactivate demand'''
+        source_node = self.get_node_based_on_label(source)
+        target_node = self.get_node_based_on_label(target)
+        for existing_demand in self.demands:
+            if (
+                source == existing_demand.source.label
+                and target == existing_demand.target.label
+            ):
+                if enable:
+                    existing_demand.active = True
+                else:
+                    existing_demand.active = False
 
     def remove_all_demands(self):
         self.demands = []
@@ -530,12 +543,13 @@ class Graph:
 
     def deploy_demands(self):
         for demand in self.demands:
-            try:
-                self.GetSpfPath(demand.source, demand.target, demand.demand, demand)
-                demand.unrouted = False
-            except Exception:
-                demand.unrouted = True
-                pass
+            if demand.active:
+                try:
+                    self.GetSpfPath(demand.source, demand.target, demand.demand, demand)
+                    demand.unrouted = False
+                except Exception:
+                    demand.unrouted = True
+                    pass
 
     def get_number_of_links(self):
         nr_of_links = 0

@@ -210,7 +210,8 @@ class Ui_MainWindow(object):
                 "Latency",
                 "Demand(Gbps)",
                 "Fail",
-                "Degraded"
+                "Degraded",
+                "Active"
             ]
         )
 
@@ -1210,15 +1211,37 @@ class Ui_MainWindow(object):
         if item is not None and item.childCount() != 0:
             removeAction = menu.addAction('Remove')
             #TODO editAction = menu.addAction('Edit')
+            if item.data(7,0)=='True': #active
+                deactivateAction = menu.addAction('Deactivate')
+            else:
+                activateAction = menu.addAction('Activate')
             action = menu.exec_(self.DemandTable.mapToGlobal(point))
             if action == removeAction:
                 self.DemandTableRemoveAction(item)
+            elif item.data(7,0)=='False':
+                if action == activateAction:
+                    self.DemandTableActivateAction(item)
+            elif item.data(7,0)=='True':
+                if action == deactivateAction:
+                    self.DemandTableDeactivateAction(item)
+
     def DemandTableRemoveAction(self,item):
         node_source = item.data(0,0)
         node_target = item.data(1,0)
         self.graph.edit_demand(node_source,node_target,0,delete=True)
         self.demand_report()
 
+    def DemandTableDeactivateAction(self,item):
+        node_source = item.data(0,0)
+        node_target = item.data(1,0)
+        self.graph.enableDemand(node_source,node_target,enable=False)
+        self.demand_report()
+
+    def DemandTableActivateAction(self,item):
+        node_source = item.data(0,0)
+        node_target = item.data(1,0)
+        self.graph.enableDemand(node_source,node_target,enable=True)
+        self.demand_report()
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate

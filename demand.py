@@ -25,4 +25,5 @@ class Demand:
         self.demand = demand
         self.unrouted = False
         self.degraded = False
+        self.active = True
         self.demand_path = []
