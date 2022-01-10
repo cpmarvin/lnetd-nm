@@ -1000,6 +1000,8 @@ class Ui_MainWindow(object):
         self.link_table_layout.setObjectName("model_info_layout")
         # create table
         self.LinkTable = QtWidgets.QTableWidget()
+        self.LinkTable.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.LinkTable.customContextMenuRequested.connect(self.LinkTableMenu)
         # self.LinkTable.setGeometry(QtCore.QRect(-5, 1, 951, 201))
         self.LinkTable.setObjectName("LinkTable")
         self.LinkTable.setSizeAdjustPolicy(
@@ -1199,6 +1201,35 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def LinkTableMenu(self,point):
+        '''Custome Context menu for Link Table
+        used to modify interface attribute'''
+        index = self.LinkTable.indexAt(point)
+        if not index.isValid():
+            return
+        item = self.LinkTable.itemAt(point)
+        menu = QtWidgets.QMenu()
+        if item is not None:
+            editAction = menu.addAction('Edit Interface')
+            action = menu.exec_(self.LinkTable.mapToGlobal(point))
+            if action == editAction:
+                self.LinkTableEditAction(item)
+
+    def LinkTableEditAction(self,item):
+        row = item.row()
+        local_ip = self.LinkTable.item(row,5).data(0)
+        all_linksItems = [ n for n in self.scene.items() if isinstance(n, Link)] # this is costly need a better way
+        interfaceItem = [ n for n in all_linksItems if n.link.local_ip == local_ip ][0]
+        peer_interface = self.graph.get_peer_interface(interfaceItem.link)
+        self.table_change_link = QDialog()
+        self.table_change_link.setWindowFlags(Qt.Tool)  # tool so far
+        self.table_change_link.ui = Ui_changeLink()
+        self.table_change_link.ui.setupUi(
+            self.table_change_link, interfaceItem.link, peer_interface
+        )
+        self.table_change_link.show()
+        self.table_change_link.ui.interface_change.connect(self.demand_report)
 
     def DemandTableMenu(self,point):
         '''Custom Context menu for Demand table
