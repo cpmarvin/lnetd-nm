@@ -634,3 +634,12 @@ class Graph:
         for t_interface in target_node.interfaces:
             if t_interface.local_ip == interface.remote_ip:
                 return t_interface
+
+    def update_all_demands(self,value,active_only=True):
+        if active_only:
+            all_demands = [ n for n in self.demands if n.active ]
+        else:
+            all_demands = self.demands
+        #apply demands value
+        for demand_entry in all_demands:
+            demand_entry.demand = demand_entry.demand * (1 + value/100)

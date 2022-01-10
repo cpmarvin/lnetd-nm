@@ -30,7 +30,7 @@ from lnetd_view import GraphicsView
 from lnetd_link import Link
 from lnetd_node import Rectangle
 from lnetd_group import LnetdGroup
-
+from adjust_demands import Ui_adjustDemands
 # L1 Model
 from l1_widget import Ui_L1_Widget
 from lnetd_l1node import L1NodeItem
@@ -153,6 +153,12 @@ class Ui_MainWindow(object):
         self.update_demandtable()
         self.network_info_update_values()
 
+    def adjust_demand_trigger(self,value,flag):
+        if flag == 1:
+            self.graph.update_all_demands(value,active_only=True)
+        else:
+            self.graph.update_all_demands(value,active_only=False)
+        self.demand_report()
     def update_demand_value(self, valueOfSlider):
         """Update the edit with the slider value"""
         text = str(valueOfSlider)
@@ -1133,6 +1139,11 @@ class Ui_MainWindow(object):
         self.show_latency.setChecked(False)
         self.show_latency.triggered.connect(self.apply_latency)
 
+        self.adjust_demands = QtWidgets.QAction(MainWindow, checkable=False)
+        self.adjust_demands.setObjectName("adjust_demands")
+        self.adjust_demands.setText("Adjust Demands")
+        self.adjust_demands.triggered.connect(self.adjust_demands_ui)
+
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionLoadTopology)
         self.menuFile.addSeparator()
@@ -1159,6 +1170,8 @@ class Ui_MainWindow(object):
         self.menuSettings.addAction(self.lnetd_web)
         self.menuSettings.addSeparator()
         self.menuSettings.addAction(self.show_latency)
+        self.menuSettings.addSeparator()
+        self.menuSettings.addAction(self.adjust_demands)
 
         self.l1topology = QtWidgets.QAction(MainWindow)
         self.l1topology.setObjectName("l1topology")
@@ -1339,6 +1352,15 @@ class Ui_MainWindow(object):
         stream.open(QtCore.QIODevice.ReadOnly)
         app.setStyleSheet(QtCore.QTextStream(stream).readAll())
         stream.close()
+
+    def adjust_demands_ui(self,state):
+        self.adjust_demands_ui = QDialog()
+        self.adjust_demands_ui.setWindowFlags(Qt.Tool)  # tool so far
+        self.adjust_demands_ui.ui = Ui_adjustDemands()
+        self.adjust_demands_ui.ui.setupUi(self.adjust_demands_ui)
+        self.adjust_demands_ui.show()
+        self.adjust_demands_ui.ui.demand_change.connect(self.adjust_demand_trigger)
+
 
     def apply_icons(self, state):
 
