@@ -89,6 +89,7 @@ class Link(QtWidgets.QGraphicsLineItem):
         # self.font_family: str = "Times New Roman"
         self.font_family = "Roboto"
         self.font_size: int = 18
+        self.show_context = True
 
     def updatePosition(self):
         self.prepareGeometryChange()
@@ -277,6 +278,8 @@ class Link(QtWidgets.QGraphicsLineItem):
         pass
 
     def contextMenuEvent(self, event):
+        if not self.show_context:
+            return
         scene = self.scene()
         cmenu = QMenu()
         if not self.link._failed:

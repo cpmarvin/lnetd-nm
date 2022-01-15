@@ -63,12 +63,14 @@ class GraphicsScene(QtWidgets.QGraphicsScene):
     nodeSource = QtCore.pyqtSignal(object, object)
     nodeTarget = QtCore.pyqtSignal(object, object)
     nodeGroup = QtCore.pyqtSignal(object, object)
+    groupTopology = QtCore.pyqtSignal(object, object)
 
     def __init__(self, parent=None):
         super(GraphicsScene, self).__init__(parent)
         self.bluebrush = QtGui.QBrush(QtCore.Qt.blue)
         self.selected_item = None
         self.setItemIndexMethod(QtWidgets.QGraphicsScene.NoIndex)
+        self.show_context = True
 
     def mousePressEvent(self, event):
         self.update()
@@ -131,8 +133,12 @@ class GraphicsScene(QtWidgets.QGraphicsScene):
     def handleNodeActionSetAsGroup(self, nodeItem, message):
         self.nodeGroup.emit(self, nodeItem)
 
+    def handleGroupActionTopology(self,item, message):
+        self.groupTopology.emit(self,item)
 
     def contextMenuEvent(self, event):
+        if not self.show_context:
+            return
         item = self.itemAt(
             event.scenePos().x(), event.scenePos().y(), QtGui.QTransform()
         )

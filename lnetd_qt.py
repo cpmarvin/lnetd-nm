@@ -35,6 +35,8 @@ from adjust_demands import Ui_adjustDemands
 from l1_widget import Ui_L1_Widget
 from lnetd_l1node import L1NodeItem
 from lnetd_l1circuit import L1CircuitItem
+# Group topology
+from group_widget import Ui_Group_Widget
 
 from PyQt5.QtCore import (
     Qt,
@@ -497,6 +499,30 @@ class Ui_MainWindow(object):
                 n.setSelected(False)
                 n.setParentItem(group1)
         self.scene.addItem(group1)
+
+    def scenechangeGroupTopology(self,scene,item):
+        # Group Topology
+        self.group_model = QDialog()
+        self.group_model.setWindowFlags(Qt.WindowStaysOnTopHint)
+        self.group_model.ui = Ui_Group_Widget()
+        self.group_model.ui.setupUi(self.group_model)
+        for node_item in item.childItems():
+            for n in node_item.node.interfaces:
+                custom_link = Link(node_item.node, n)
+                custom_link.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, False)
+                custom_link.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, False)
+                custom_link.setFlag(QtWidgets.QGraphicsItem.ItemIsFocusable, False)
+                custom_link.show_context = False
+                self.group_model.ui.scene.addItem(custom_link)
+            entry = Rectangle(node_item.node)
+            entry.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, False)
+            entry.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, False)
+            entry.show_context = False
+            if node_item.icons:
+                entry.icons=True
+            self.group_model.ui.scene.addItem(entry)
+        self.group_model.show()
+
 
     def sceneInterfaceDown(self, scene, InterfaceItem):
         interface_down = InterfaceItem
@@ -1203,6 +1229,7 @@ class Ui_MainWindow(object):
         self.scene.nodeSource.connect(self.scenechangeNodeSource)
         self.scene.nodeTarget.connect(self.scenechangeNodeTarget)
         self.scene.nodeGroup.connect(self.scenechangeNodeGroup)
+        self.scene.groupTopology.connect(self.scenechangeGroupTopology)
 
         self.scene.interfaceDown.connect(self.sceneInterfaceDown)
         self.scene.interfaceUp.connect(self.sceneInterfaceUp)

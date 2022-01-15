@@ -120,6 +120,7 @@ class LnetdGroup(QGraphicsItemGroup):
     def contextMenuEvent(self, event):
         self.cmenu = QMenu()
         un_group = self.cmenu.addAction("Un-Group")
+        topology = self.cmenu.addAction("Show Topology")
         if self.hide:
             un_hide = self.cmenu.addAction("Un-Hide")
             un_hide.setText('Un-hide Nodes')
@@ -131,11 +132,11 @@ class LnetdGroup(QGraphicsItemGroup):
             for item in self.childItems():
                 item.show()
             self.hide = False
-        elif action == hide:
+        elif action.text() == 'Hide Nodes':
             for item in self.childItems():
                 item.hide()
             self.hide = True
-        elif action == un_group:
+        elif action.text() == 'Un-Group':
             for item in self.childItems():
                 self.removeFromGroup(item)
                 self.scene.removeItem(item)
@@ -143,6 +144,9 @@ class LnetdGroup(QGraphicsItemGroup):
                 item.show()
                 item.prepareGeometryChange()
             self.scene.destroyItemGroup(self)
+        elif action.text() == 'Show Topology':
+            self.scene.handleGroupActionTopology(
+                 self, "message from group topology")
         self.scene.update()
         # dont propagate event
         super(LnetdGroup, self).contextMenuEvent(event)
