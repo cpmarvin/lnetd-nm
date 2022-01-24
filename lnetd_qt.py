@@ -400,6 +400,21 @@ class Ui_MainWindow(object):
                     "have permission to write to the specified file and try again!",
                 )
 
+    def export_report_csv(self):
+        path = QFileDialog.getSaveFileName()[0]
+        if path != "":
+            try:
+                with open(path, "w") as file:
+                    report_json = self.graph.network_report()
+                    json.dump(report_json, file, sort_keys=True, indent=4,default=str)
+            except Exception as e:
+                QMessageBox.critical(
+                    self.centralwidget,
+                    "Error!",
+                    "An error occurred when exporting report. Make sure that you "
+                    "have permission to write to the specified file and try again!",
+                )
+
     def export_demands_json(self):
         path = QFileDialog.getSaveFileName()[0]
         if path != "":
@@ -1132,6 +1147,11 @@ class Ui_MainWindow(object):
         self.actionExportDemands.setText("Export Demands JSON")
         self.actionExportDemands.triggered.connect(self.export_demands_json)
 
+        self.actionExportReport = QtWidgets.QAction(MainWindow)
+        self.actionExportReport.setObjectName("actionExportReport")
+        self.actionExportReport.setText("Export Network Report")
+        self.actionExportReport.triggered.connect(self.export_report_csv)
+
         self.actionQuit = QtWidgets.QAction(MainWindow)
         self.actionQuit.setObjectName("actionQuit")
         self.actionQuit.setText("Quit")
@@ -1180,6 +1200,8 @@ class Ui_MainWindow(object):
         self.menuFile.addAction(self.actionExportTopology)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionExportDemands)
+        self.menuFile.addSeparator()
+        self.menuFile.addAction(self.actionExportReport)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionQuit)
         self.menuFile.addSeparator()

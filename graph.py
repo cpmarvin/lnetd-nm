@@ -4,6 +4,7 @@ from typing import Set, Tuple, List, Generic, Any, Dict, Callable
 import ipdb
 
 import networkx as nx
+from  operator import itemgetter
 
 from node import Node
 from l1node import L1Node
@@ -29,6 +30,58 @@ class Graph:
                 interface._on_spf = False
                 if demand:
                     interface.util = 0
+
+    def return_total_metric(self,paths,g):
+        total_metric = []
+        for p in paths:
+            path_metric = 0
+            u=p[0]
+            for v in p[1:]:
+                min_weight = min(d['metric'] for d in g[u][v].values())
+                path_metric = path_metric + min_weight
+                u=v
+            total_metric.append(path_metric)
+        return min(total_metric)
+
+    def network_report(self):
+        G = nx.MultiDiGraph()
+        # node_list = [node for node in self.get_nodes() if not node._failed]
+        node_list = self.get_nodes()
+        for node in node_list:
+            for interface in node.interfaces:
+                if not interface._failed:
+                    G.add_edge(
+                        node, interface.target, **interface._networkX(), data=interface
+                    )
+        G.add_nodes_from(node_list)
+        g_undirected = G.to_undirected()
+        network_report = {}
+        network_report['Connected Network'] = nx.is_connected(g_undirected)
+        network_report['Number of Nodes'] = g_undirected.number_of_nodes()
+        network_report['Number of Links'] = g_undirected.number_of_edges()
+        network_report['Network Density'] = nx.density(g_undirected)
+        if nx.is_connected(g_undirected):
+            network_report['Network Diameter'] = nx.diameter(g_undirected)
+        else:
+            network_report['Network Diameter'] = 0
+        degree_dict = dict(g_undirected.degree(g_undirected.nodes(),weight=''))
+        sorted_degree = sorted(degree_dict.items(), key=itemgetter(1), reverse=True)
+        network_report['Connectivity Node Degree'] = sorted_degree
+        network_report['paths'] = []
+        for node in node_list:
+            source = node
+            target_nodes = [ node for node in node_list if node!=source]
+            for target in target_nodes:
+                try:
+                    paths = list(nx.all_shortest_paths(G, source, target, weight='metric'))
+                    num_ecmp_paths = len(paths)
+                    total_metric = self.return_total_metric(paths,G)
+                    entry = {'source':source,'target':target,'ecmp_paths':num_ecmp_paths,'path_metric':total_metric,'note':'valid'}
+                except Exception as e:
+                    entry = {'source':source,'target':target,'ecmp_paths':'None','path_metric':'None','note':'NoPath'}
+                    #print(e)
+                network_report['paths'].append(entry)
+        return network_report
 
     def calculate_components(self):
         """Calculate the components of the graph.
