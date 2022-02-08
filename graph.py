@@ -76,9 +76,15 @@ class Graph:
                     paths = list(nx.all_shortest_paths(G, source, target, weight='metric'))
                     num_ecmp_paths = len(paths)
                     total_metric = self.return_total_metric(paths,G)
-                    entry = {'source':source,'target':target,'ecmp_paths':num_ecmp_paths,'path_metric':total_metric,'note':'valid'}
+                    entry = {'source':source,'target':target,'ecmp_paths':num_ecmp_paths,
+		             'path_metric':total_metric,
+                             'paths':paths,
+                             'note':'valid'}
                 except Exception as e:
-                    entry = {'source':source,'target':target,'ecmp_paths':'None','path_metric':'None','note':'NoPath'}
+                    entry = {'source':source,'target':target,'ecmp_paths':'None',
+                             'path_metric':'None',
+                             'paths':'None',
+                             'note':'NoPath'}
                     #print(e)
                 network_report['paths'].append(entry)
         return network_report
