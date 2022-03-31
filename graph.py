@@ -33,15 +33,26 @@ class Graph:
 
     def return_total_metric(self,paths,g):
         total_metric = []
+        total_latency = []
+        total_capacity = []
         for p in paths:
             path_metric = 0
+            path_latency = 0
+            path_capacity = 0
             u=p[0]
             for v in p[1:]:
+                #print(g[u][v]['data'].values())
                 min_weight = min(d['metric'] for d in g[u][v].values())
+                min_latency = min(d['data'].latency for d in g[u][v].values())
+                min_capacity = min(d['data'].capacity for d in g[u][v].values())
                 path_metric = path_metric + min_weight
+                path_latency = path_latency + min_latency
+                path_capacity = path_capacity + min_capacity
                 u=v
             total_metric.append(path_metric)
-        return min(total_metric)
+            total_latency.append(path_latency)
+            total_capacity.append(path_capacity)
+        return min(total_metric),min(total_latency),min(total_capacity)
 
     def network_report(self):
         G = nx.MultiDiGraph()
@@ -75,14 +86,14 @@ class Graph:
                 try:
                     paths = list(nx.all_shortest_paths(G, source, target, weight='metric'))
                     num_ecmp_paths = len(paths)
-                    total_metric = self.return_total_metric(paths,G)
+                    total_metric,total_latency,total_capacity = self.return_total_metric(paths,G)
                     entry = {'source':source,'target':target,'ecmp_paths':num_ecmp_paths,
-		             'path_metric':total_metric,
+		             'path_metric':total_metric,'total_latency':total_latency,'total_capacity':total_capacity,
                              'paths':paths,
                              'note':'valid'}
                 except Exception as e:
                     entry = {'source':source,'target':target,'ecmp_paths':'None',
-                             'path_metric':'None',
+                             'path_metric':'None','total_latency':'None','total_capacity':'None',
                              'paths':'None',
                              'note':'NoPath'}
                     #print(e)

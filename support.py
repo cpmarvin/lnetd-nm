@@ -32,6 +32,7 @@ def load_graph_web(lnetd_web_url, lnetd_web_user, lnetd_web_password):
     session.verify = False
     r = session.get(
         lnetd_web_url,
+        verify=False,
         auth=requests.auth.HTTPBasicAuth(lnetd_web_user, lnetd_web_password),
     )
     if not r.status_code == 200:
