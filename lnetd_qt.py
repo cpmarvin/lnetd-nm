@@ -183,7 +183,7 @@ class Ui_MainWindow(object):
                 "DOWN",
                 "ON SPF",
                 "LINK NR",
-                "LATENCY",
+                "LATENCY(ms)",
                 "HIGHLIGHT",
             ]
         )
@@ -707,7 +707,7 @@ class Ui_MainWindow(object):
         )
 
         self.centralwidget.setSizePolicy(sizePolicy)
-        self.centralwidget.setMinimumSize(QtCore.QSize(995, 715))
+        self.centralwidget.setMinimumSize(QtCore.QSize(100, 100))
 
         self.centralwidget.setObjectName("centralwidget")
 
@@ -803,8 +803,8 @@ class Ui_MainWindow(object):
 
         self.splitter.setSizePolicy(sizePolicy)
         self.splitter.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.splitter.setLineWidth(4)
-        self.splitter.setMidLineWidth(4)
+        self.splitter.setLineWidth(14)
+        self.splitter.setMidLineWidth(14)
         self.splitter.setOrientation(QtCore.Qt.Vertical)
         self.splitter.setOpaqueResize(False)
         self.splitter.setHandleWidth(10)
@@ -1059,7 +1059,7 @@ class Ui_MainWindow(object):
         self.LinkTable.setRowCount(0)
         self.LinkTable.setColumnCount(12)
         self.LinkTable.setObjectName("LinkTable")
-        self.LinkTable.setSortingEnabled(False)
+        self.LinkTable.setSortingEnabled(True)
         self.LinkTable.horizontalHeader().setVisible(True)
         self.LinkTable.horizontalHeader().setCascadingSectionResizes(True)
         self.LinkTable.horizontalHeader().setSectionResizeMode(

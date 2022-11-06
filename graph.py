@@ -35,16 +35,20 @@ class Graph:
         total_metric = []
         total_latency = []
         total_capacity = []
-        for p in paths:
+        path_list = {}
+        for count,p in enumerate(paths):
+            #print(count,p)
             path_metric = 0
             path_latency = 0
             path_capacity = 0
             u=p[0]
+            path_list[count] = {}
+            path_list[count]['path'] = p
             for v in p[1:]:
                 #print(g[u][v]['data'].values())
                 min_weight = min(d['metric'] for d in g[u][v].values())
-                min_latency = min(d['data'].latency for d in g[u][v].values())
-                min_capacity = min(d['data'].capacity for d in g[u][v].values())
+                min_latency = min(d['data'].latency for d in g[u][v].values() if d['metric'] == min_weight)
+                min_capacity = min(d['data'].capacity for d in g[u][v].values() if d['metric'] == min_weight)
                 path_metric = path_metric + min_weight
                 path_latency = path_latency + min_latency
                 path_capacity = path_capacity + min_capacity
@@ -52,7 +56,11 @@ class Graph:
             total_metric.append(path_metric)
             total_latency.append(path_latency)
             total_capacity.append(path_capacity)
-        return min(total_metric),min(total_latency),min(total_capacity)
+            path_list[count]['metric'] = path_metric
+            path_list[count]['latency'] = path_latency
+            path_list[count]['capacity'] = path_capacity
+        #print(path_list)
+        return min(total_metric),min(total_latency),min(total_capacity),path_list,max(total_latency)
 
     def network_report(self):
         G = nx.MultiDiGraph()
@@ -86,19 +94,20 @@ class Graph:
                 try:
                     paths = list(nx.all_shortest_paths(G, source, target, weight='metric'))
                     num_ecmp_paths = len(paths)
-                    total_metric,total_latency,total_capacity = self.return_total_metric(paths,G)
+                    total_metric,total_latency,total_capacity,path_list,max_latency = self.return_total_metric(paths,G)
                     entry = {'source':source,'target':target,'ecmp_paths':num_ecmp_paths,
-		             'path_metric':total_metric,'total_latency':total_latency,'total_capacity':total_capacity,
-                             'paths':paths,
+                             'path_metric':total_metric,'min_total_latency':total_latency,'min_total_capacity':total_capacity,
+                             'paths':path_list,'max_total_latency':max_latency,
                              'note':'valid'}
                 except Exception as e:
                     entry = {'source':source,'target':target,'ecmp_paths':'None',
-                             'path_metric':'None','total_latency':'None','total_capacity':'None',
-                             'paths':'None',
+                             'path_metric':'None','min_total_latency':'None','min_total_capacity':'None',
+                             'paths':'None','max_total_latency':'None',
                              'note':'NoPath'}
-                    #print(e)
+                    print(e)
                 network_report['paths'].append(entry)
         return network_report
+
 
     def calculate_components(self):
         """Calculate the components of the graph.
