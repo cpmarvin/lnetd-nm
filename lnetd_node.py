@@ -79,6 +79,7 @@ class Rectangle(QtWidgets.QGraphicsItem):
         # self.font_family: str = "Times New Roman"
         self.font_family = "Roboto"
         self.font_size: int = 18
+        self.show_context = True
 
     def shape(self):
         """this is the selection area and colision detection"""
@@ -179,6 +180,8 @@ class Rectangle(QtWidgets.QGraphicsItem):
         return value
 
     def contextMenuEvent(self, event):
+        if not self.show_context:
+            return
         scene = self.scene()
         cmenu = QMenu()
         selected_nodes = [item for item in scene.selectedItems() if isinstance(item,Rectangle)]

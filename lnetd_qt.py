@@ -35,6 +35,8 @@ from adjust_demands import Ui_adjustDemands
 from l1_widget import Ui_L1_Widget
 from lnetd_l1node import L1NodeItem
 from lnetd_l1circuit import L1CircuitItem
+# Group topology
+from group_widget import Ui_Group_Widget
 
 from PyQt5.QtCore import (
     Qt,
@@ -181,7 +183,7 @@ class Ui_MainWindow(object):
                 "DOWN",
                 "ON SPF",
                 "LINK NR",
-                "LATENCY",
+                "LATENCY(ms)",
                 "HIGHLIGHT",
             ]
         )
@@ -398,6 +400,21 @@ class Ui_MainWindow(object):
                     "have permission to write to the specified file and try again!",
                 )
 
+    def export_report_csv(self):
+        path = QFileDialog.getSaveFileName()[0]
+        if path != "":
+            try:
+                with open(path, "w") as file:
+                    report_json = self.graph.network_report()
+                    json.dump(report_json, file, sort_keys=True, indent=4,default=str)
+            except Exception as e:
+                QMessageBox.critical(
+                    self.centralwidget,
+                    "Error!",
+                    "An error occurred when exporting report. Make sure that you "
+                    "have permission to write to the specified file and try again!",
+                )
+
     def export_demands_json(self):
         path = QFileDialog.getSaveFileName()[0]
         if path != "":
@@ -497,6 +514,30 @@ class Ui_MainWindow(object):
                 n.setSelected(False)
                 n.setParentItem(group1)
         self.scene.addItem(group1)
+
+    def scenechangeGroupTopology(self,scene,item):
+        # Group Topology
+        self.group_model = QDialog()
+        self.group_model.setWindowFlags(Qt.WindowStaysOnTopHint)
+        self.group_model.ui = Ui_Group_Widget()
+        self.group_model.ui.setupUi(self.group_model)
+        for node_item in item.childItems():
+            for n in node_item.node.interfaces:
+                custom_link = Link(node_item.node, n)
+                custom_link.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, False)
+                custom_link.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, False)
+                custom_link.setFlag(QtWidgets.QGraphicsItem.ItemIsFocusable, False)
+                custom_link.show_context = False
+                self.group_model.ui.scene.addItem(custom_link)
+            entry = Rectangle(node_item.node)
+            entry.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, False)
+            entry.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, False)
+            entry.show_context = False
+            if node_item.icons:
+                entry.icons=True
+            self.group_model.ui.scene.addItem(entry)
+        self.group_model.show()
+
 
     def sceneInterfaceDown(self, scene, InterfaceItem):
         interface_down = InterfaceItem
@@ -666,7 +707,7 @@ class Ui_MainWindow(object):
         )
 
         self.centralwidget.setSizePolicy(sizePolicy)
-        self.centralwidget.setMinimumSize(QtCore.QSize(995, 715))
+        self.centralwidget.setMinimumSize(QtCore.QSize(100, 100))
 
         self.centralwidget.setObjectName("centralwidget")
 
@@ -762,8 +803,8 @@ class Ui_MainWindow(object):
 
         self.splitter.setSizePolicy(sizePolicy)
         self.splitter.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.splitter.setLineWidth(4)
-        self.splitter.setMidLineWidth(4)
+        self.splitter.setLineWidth(14)
+        self.splitter.setMidLineWidth(14)
         self.splitter.setOrientation(QtCore.Qt.Vertical)
         self.splitter.setOpaqueResize(False)
         self.splitter.setHandleWidth(10)
@@ -1018,7 +1059,7 @@ class Ui_MainWindow(object):
         self.LinkTable.setRowCount(0)
         self.LinkTable.setColumnCount(12)
         self.LinkTable.setObjectName("LinkTable")
-        self.LinkTable.setSortingEnabled(False)
+        self.LinkTable.setSortingEnabled(True)
         self.LinkTable.horizontalHeader().setVisible(True)
         self.LinkTable.horizontalHeader().setCascadingSectionResizes(True)
         self.LinkTable.horizontalHeader().setSectionResizeMode(
@@ -1106,6 +1147,11 @@ class Ui_MainWindow(object):
         self.actionExportDemands.setText("Export Demands JSON")
         self.actionExportDemands.triggered.connect(self.export_demands_json)
 
+        self.actionExportReport = QtWidgets.QAction(MainWindow)
+        self.actionExportReport.setObjectName("actionExportReport")
+        self.actionExportReport.setText("Export Network Report")
+        self.actionExportReport.triggered.connect(self.export_report_csv)
+
         self.actionQuit = QtWidgets.QAction(MainWindow)
         self.actionQuit.setObjectName("actionQuit")
         self.actionQuit.setText("Quit")
@@ -1155,6 +1201,8 @@ class Ui_MainWindow(object):
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionExportDemands)
         self.menuFile.addSeparator()
+        self.menuFile.addAction(self.actionExportReport)
+        self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionQuit)
         self.menuFile.addSeparator()
 
@@ -1203,6 +1251,7 @@ class Ui_MainWindow(object):
         self.scene.nodeSource.connect(self.scenechangeNodeSource)
         self.scene.nodeTarget.connect(self.scenechangeNodeTarget)
         self.scene.nodeGroup.connect(self.scenechangeNodeGroup)
+        self.scene.groupTopology.connect(self.scenechangeGroupTopology)
 
         self.scene.interfaceDown.connect(self.sceneInterfaceDown)
         self.scene.interfaceUp.connect(self.sceneInterfaceUp)
