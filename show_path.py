@@ -7,6 +7,7 @@ class Ui_ShowPath(QtWidgets.QDialog):
             self.graph.ShowSpfPath(
                 self.source_node, self.target_node, set_highlight=False
             )
+            self.graph.reset_highlight()
         except:
             pass
         return super().closeEvent(a0)
@@ -18,6 +19,7 @@ class Ui_ShowPath(QtWidgets.QDialog):
         self.target_node = target_node
         self.source_node = source_node
         self.graph = graph
+        self.graph.reset_highlight()
         ShowPath.setObjectName("ShowPath")
         # ShowPath.resize(465, 243)
         self.showPath = QtWidgets.QTreeWidget(ShowPath)

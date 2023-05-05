@@ -24,6 +24,11 @@ class Graph:
         self.components: Set[Node] = []
         self.demands: List[Demand] = []
 
+    def reset_highlight(self):
+        for node in self.nodes:
+            for interface in node.interfaces:
+                interface.highlight = False
+
     def reset_spf1(self, demand=False):
         for node in self.nodes:
             for interface in node.interfaces:
@@ -624,6 +629,7 @@ class Graph:
         for demand in self.demands:
             if demand.active:
                 try:
+                    demand.degraded = False
                     self.GetSpfPath(demand.source, demand.target, demand.demand, demand)
                     demand.unrouted = False
                 except Exception:

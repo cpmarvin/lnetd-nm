@@ -72,7 +72,7 @@ class GraphicsView(QtWidgets.QGraphicsView):
 
         # viewport see https://doc.qt.io/qt-5/qgraphicsview.html#ViewportUpdateMode-enum
         self.setViewportUpdateMode(GraphicsView.SmartViewportUpdate)
-
+        self.setAlignment(Qt.AlignVCenter)
         self.scale(0.8, 0.8)
 
     def mouseMoveEvent(self, event):

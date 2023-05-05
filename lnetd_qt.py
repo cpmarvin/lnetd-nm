@@ -614,6 +614,7 @@ class Ui_MainWindow(object):
                 capacity=capacity,
                 remote_ip=ip2,
                 linknum=1,
+                latency = 1,
             )
             interface_target_source = Interface(
                 target=source_node,
@@ -623,6 +624,7 @@ class Ui_MainWindow(object):
                 capacity=capacity,
                 remote_ip=ip1,
                 linknum=1,
+                latency = 1,
             )
             # append to graph
             source_node.interfaces.append(interface_source_target)
@@ -732,7 +734,7 @@ class Ui_MainWindow(object):
         self.gridLayout_3.setContentsMargins(0, -1, 0, -1)
         self.gridLayout_3.setObjectName("gridLayout_3")
         self.legend_grid = QtWidgets.QGridLayout()
-        self.legend_grid.setContentsMargins(10, -1, -1, -1)
+        self.legend_grid.setContentsMargins(-1, -1, -1, -1)
         self.legend_grid.setObjectName("legend_grid")
 
         self.magenta_legend = QtWidgets.QPushButton(self.legend_widget)
@@ -808,7 +810,7 @@ class Ui_MainWindow(object):
         self.splitter.setOrientation(QtCore.Qt.Vertical)
         self.splitter.setOpaqueResize(False)
         self.splitter.setHandleWidth(10)
-        self.splitter.setChildrenCollapsible(False)
+        self.splitter.setChildrenCollapsible(True)
         self.splitter.setObjectName("splitter")
 
         self.graph = Graph()
@@ -841,10 +843,10 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.graphicsView.sizePolicy().hasHeightForWidth())
 
         self.graphicsView.setSizePolicy(sizePolicy)
-        self.graphicsView.setFrameShape(QtWidgets.QFrame.Box)
-        self.graphicsView.setFrameShadow(QtWidgets.QFrame.Plain)
-        self.graphicsView.setLineWidth(1)
-        self.graphicsView.setMidLineWidth(-1)
+        #self.graphicsView.setFrameShape(QtWidgets.QFrame.Box)
+        #self.graphicsView.setFrameShadow(QtWidgets.QFrame.Plain)
+        #self.graphicsView.setLineWidth(1)
+        #self.graphicsView.setMidLineWidth(-1)
         self.graphicsView.setObjectName("graphicsView")
 
         self.splitter.addWidget(self.graphicsView)
@@ -1304,6 +1306,7 @@ class Ui_MainWindow(object):
         if item is not None and item.childCount() != 0:
             removeAction = menu.addAction('Remove')
             #TODO editAction = menu.addAction('Edit')
+            showAction = menu.addAction('Show Demand')
             if item.data(7,0)=='True': #active
                 deactivateAction = menu.addAction('Deactivate')
             else:
@@ -1311,12 +1314,34 @@ class Ui_MainWindow(object):
             action = menu.exec_(self.DemandTable.mapToGlobal(point))
             if action == removeAction:
                 self.DemandTableRemoveAction(item)
+            elif action == showAction:
+                self.DemandTableShowAction(item)
             elif item.data(7,0)=='False':
                 if action == activateAction:
                     self.DemandTableActivateAction(item)
             elif item.data(7,0)=='True':
                 if action == deactivateAction:
                     self.DemandTableDeactivateAction(item)
+    
+    def DemandTableShowAction(self,item):
+        self.show_path_error = QDialog()
+        ##reverse source and destination (used in function)
+        source_node = self.graph.get_node_based_on_label(item.data(1,0))
+        target_node = self.graph.get_node_based_on_label(item.data(0,0))
+        try:
+            self.graph.ShowSpfPath(source_node, target_node, set_highlight=False)
+            self.show_path = Ui_ShowPath()
+            self.show_path.setupUi(
+                self.show_path, source_node, target_node, self.graph
+            )
+            self.show_path.show()
+        except:
+                QtWidgets.QMessageBox.critical(
+                    self.show_path_error,
+                    "Error!",
+                    "No path between the nodes !",
+                )
+        return
 
     def DemandTableRemoveAction(self,item):
         node_source = item.data(0,0)
@@ -1340,10 +1365,10 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "LnetD - Network Model"))
         self.gray_legend.setText(_translate("MainWindow", "0%"))
-        self.blue_legend.setText(_translate("MainWindow", blue_threshold + "%"))
-        self.green_legend.setText(_translate("MainWindow", green_threshold + "%"))
-        self.yellow_legend.setText(_translate("MainWindow", yellow_threshold + "%"))
-        self.orange_legend.setText(_translate("MainWindow", orange_threshold + "%"))
+        self.blue_legend.setText(_translate("MainWindow", "1-" + blue_threshold + "%"))
+        self.green_legend.setText(_translate("MainWindow", blue_threshold+"-"+green_threshold + "%"))
+        self.yellow_legend.setText(_translate("MainWindow", green_threshold+"-"+yellow_threshold + "%"))
+        self.orange_legend.setText(_translate("MainWindow", yellow_threshold+"-"+orange_threshold + "%"))
         self.magenta_legend.setText(
             _translate("MainWindow", ">" + orange_threshold + "%")
         )
