@@ -62,7 +62,7 @@ def load_graph_web(lnetd_web_url, lnetd_web_user, lnetd_web_password):
         l_ip = vertex_components["local_ip"]
         linknum = vertex_components["linknum"]
         capacity = vertex_components["capacity"]
-        latency = vertex_components.get("latency")
+        latency = vertex_components.get("latency",1)
         # print(vertex_components.get('remote_ip'))
         for node in nodes:
             import_coordinates = False
@@ -137,7 +137,7 @@ def load_graph(path):
         l_ip = vertex_components["local_ip"]
         linknum = vertex_components["linknum"]
         capacity = vertex_components["capacity"]
-        latency = int(vertex_components.get("latency"))
+        latency = int(vertex_components.get("latency",1))
         # print(vertex_components.get('remote_ip'))
         for node in nodes:
             import_coordinates = False
