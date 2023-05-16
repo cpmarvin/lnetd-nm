@@ -86,7 +86,7 @@ def load_graph_web(lnetd_web_url, lnetd_web_user, lnetd_web_password):
                     y = randint(1, 200)
 
                 # add it to graph with default values
-                node_dictionary[node] = graph.add_node(Vector(x, y), 18, node)
+                node_dictionary[node] = graph.add_node(Vector(x, y), 40, node)
         # get the node objects from the names
         n1, n2 = node_dictionary[nodes[0]], node_dictionary[nodes[1]]
         graph.add_vertex(
@@ -161,7 +161,7 @@ def load_graph(path):
                     y = randint(1, 5600)
 
                 # add it to graph with default values
-                node_dictionary[node] = graph.add_node(Vector(x, y), 18, node)
+                node_dictionary[node] = graph.add_node(Vector(x, y), 40, node)
         # get the node objects from the names
         n1, n2 = node_dictionary[nodes[0]], node_dictionary[nodes[1]]
         graph.add_vertex(

@@ -456,13 +456,14 @@ class Ui_MainWindow(object):
         self.demand_report()
         # self.scene.update()
 
-    def sceneAddNode(self, scene, event):
+    def sceneAddNode(self, scene, event, event_position):
         rtr_label = (
             "RTR-"
             + "" * (len(self.graph.nodes) // 26)
             + chr(65 + len(self.graph.nodes) % 26)
         )
-        node = Node(Vector(event.scenePos().x(), event.scenePos().y()), 15, rtr_label)
+        #node = Node(Vector(event.scenePos().x(), event.scenePos().y()), 15, rtr_label)
+        node = Node(Vector(event_position.x(),event_position.y()),40,rtr_label)
         nodeItem = Rectangle(node)
         self.graph.nodes.append(node)
         if self.icons.isChecked():
@@ -507,21 +508,39 @@ class Ui_MainWindow(object):
 
     def scenechangeNodeGroup(self, scene, nodeItem):
         #print(event.scenePos().x(), event.scenePos().y())
-        group1 = LnetdGroup(nodeItem,scene)
-        for n in self.scene.selectedItems():
+        groups = [ entry for entry in self.scene.items() if isinstance(entry, LnetdGroup)]
+        group_label = (
+            "Group-"
+            + str(len(groups) + 1)
+        )
+        if self.groupNodePosition.isChecked():
+            group1 = LnetdGroup(nodeItem,scene,group_label,keepPosition=True)
+        else:
+            group1 = LnetdGroup(nodeItem,scene,group_label,keepPosition=False)
+        for count, n in enumerate(self.scene.selectedItems()):
             if isinstance(n, Rectangle):
                 #n.hide()
+                '''keep old node position before changing
+                might be useful if i want to re-draw it based on old position in the map'''
+                group1.node_list[n.node.label] = {'posX':n.pos().x(),'posY':n.pos().y()}
+                n.setPos(nodeItem.pos() + QPointF(2*count,-2*count))
                 n.setSelected(False)
                 n.setParentItem(group1)
         self.scene.addItem(group1)
 
     def scenechangeGroupTopology(self,scene,item):
         # Group Topology
+        '''TODO 
+        NOT used for now.
+        this needs a new way of displaying,at the moment changing the node pos changes 
+        the main scene due to the way graph is made. Interface has node , node has position.
+        '''
         self.group_model = QDialog()
         self.group_model.setWindowFlags(Qt.WindowStaysOnTopHint)
         self.group_model.ui = Ui_Group_Widget()
         self.group_model.ui.setupUi(self.group_model)
         for node_item in item.childItems():
+            entry = Rectangle(node_item.node)
             for n in node_item.node.interfaces:
                 custom_link = Link(node_item.node, n)
                 custom_link.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, False)
@@ -529,13 +548,17 @@ class Ui_MainWindow(object):
                 custom_link.setFlag(QtWidgets.QGraphicsItem.ItemIsFocusable, False)
                 custom_link.show_context = False
                 self.group_model.ui.scene.addItem(custom_link)
-            entry = Rectangle(node_item.node)
             entry.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, False)
             entry.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, False)
             entry.show_context = False
             if node_item.icons:
                 entry.icons=True
             self.group_model.ui.scene.addItem(entry)
+            previousNode = item.node_list.get(node_item.node.label)
+            if previousNode:
+                print('found node',entry)
+                entry.setFlag(QtWidgets.QGraphicsItem.ItemSendsGeometryChanges,False)
+                entry.setPos(previousNode['posX'],previousNode['posY'])
         self.group_model.show()
 
 
@@ -1164,6 +1187,11 @@ class Ui_MainWindow(object):
         self.actionWarningsON.setText("Warnings ON")
         self.actionWarningsON.setChecked(True)
 
+        self.groupNodePosition = QtWidgets.QAction(MainWindow, checkable=True)
+        self.groupNodePosition.setObjectName("groupNodePosition")
+        self.groupNodePosition.setText("Group Position")
+        self.groupNodePosition.setChecked(True)
+
         self.actionTheme = QtWidgets.QAction(MainWindow, checkable=True)
         self.actionTheme.setObjectName("actionTheme")
         self.actionTheme.setText("Dark Theme")
@@ -1210,6 +1238,8 @@ class Ui_MainWindow(object):
 
         self.menuSettings.addSeparator()
         self.menuSettings.addAction(self.actionWarningsON)
+
+        self.menuSettings.addAction(self.groupNodePosition)
 
         self.menuSettings.addSeparator()
         self.menuSettings.addAction(self.icons)

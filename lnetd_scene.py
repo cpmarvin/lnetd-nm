@@ -55,7 +55,7 @@ class GraphicsScene(QtWidgets.QGraphicsScene):
     interfaceUp = QtCore.pyqtSignal(object, object)
     interfaceChange = QtCore.pyqtSignal(object, object)
     interfaceDelete = QtCore.pyqtSignal(object, object)
-    addNode = QtCore.pyqtSignal(object, object, object)
+    addNode = QtCore.pyqtSignal(object, object,object)
     changeNodeName = QtCore.pyqtSignal(object, object)
     interfaceAdd = QtCore.pyqtSignal(object, object)
     showPath = QtCore.pyqtSignal(object, object)
@@ -153,6 +153,6 @@ class GraphicsScene(QtWidgets.QGraphicsScene):
             add_node = cmenu.addAction("Add Node")
             action = cmenu.exec_(event.screenPos())
             if action == add_node:
-                self.addNode.emit(self, event, event.screenPos())
+                self.addNode.emit(self, event, event.scenePos())
         # dont propagate event
         # super(GraphicsScene, self).contextMenuEvent(event)

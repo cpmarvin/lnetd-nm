@@ -75,6 +75,7 @@ class Link(QtWidgets.QGraphicsLineItem):
         self.source_node = source_node
         self.link = link
         self.show_latency = False
+        self.link_width = 2.5
         # fix me here , set. self threshold for blue and then in paint create the dict
         self.blue_threshold = int(blue_threshold)
         self.green_threshold = int(green_threshold)
@@ -201,7 +202,7 @@ class Link(QtWidgets.QGraphicsLineItem):
         elif option.state & QtWidgets.QStyle.State_Selected:
             painter.setPen(QPen(link_color, 2, 4))
         else:
-            painter.setPen(QPen(link_color, Qt.SolidLine))
+            painter.setPen(QPen(link_color, self.link_width ,Qt.SolidLine))
 
         painter.setBrush(QBrush(link_color, Qt.SolidPattern))
 
@@ -212,7 +213,9 @@ class Link(QtWidgets.QGraphicsLineItem):
         )
 
         painter.drawLine(QPointF(d0x, d0y), QPointF(endX, endY))
+
         painter.setPen(QtGui.QPen(link_color, 1))
+        
         # text
         if endX - d0x > 0:
             link_paint = QLineF(QPointF(d0x, d0y), QPointF(endX, endY))
@@ -247,6 +250,7 @@ class Link(QtWidgets.QGraphicsLineItem):
 
         painter.setPen(QtGui.QPen(Qt.black, Qt.SolidLine))
         painter.drawRect(QRect(rx, ry, weight_v[0], 2 * weight_v[1]))
+
         painter.setFont(QFont(self.font_family, self.font_size / 3.3))
         painter.setPen(QPen(Qt.white, Qt.SolidLine))
         if self.show_latency:

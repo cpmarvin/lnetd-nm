@@ -57,8 +57,10 @@ from lnetd_node import Rectangle
 from utilities import Vector
 
 class LnetdGroup(QGraphicsItemGroup):
-    def __init__(self,node,scene):
+    def __init__(self,node,scene,label,keepPosition):
         super(LnetdGroup, self).__init__()
+        self.label = label
+        self.keepPosition = keepPosition
         self.setFlag(QGraphicsItemGroup.ItemIsMovable)
         #self.setFlag(QGraphicsItemGroup.ItemIsSelectable)
         self.setFlag(QtWidgets.QGraphicsItem.ItemSendsGeometryChanges)
@@ -66,11 +68,12 @@ class LnetdGroup(QGraphicsItemGroup):
         #self.setZValue(0)
         self.scene = scene
         self.hide = False
+        self.node_list = {}
         #self.setHandlesChildEvents(false)
         #self.setFlag(QGraphicsItemGroup.ItemClipsChildrenToShape)
     def boundingRect(self):
         #return self.childrenBoundingRect()
-        return self.childrenBoundingRect().adjusted(0, 0, 0, 0)
+        return self.childrenBoundingRect().adjusted(-25, -25, 25, 25)
 
     def shape1(self):
         """this is the selection area and colision detection"""
@@ -85,19 +88,39 @@ class LnetdGroup(QGraphicsItemGroup):
               painter: QtGui.QPainter,
               option: QtWidgets.QStyleOptionGraphicsItem,
               widget: QtWidgets.QWidget = None):
-        img_png = QtGui.QPixmap(":/icons/router.png")
+        img_png = QtGui.QPixmap(":/icons/roadm_selected.png")
         painter.setPen(QtGui.QPen(QtCore.Qt.NoPen))
         painter.setBrush(QtGui.QBrush(QtCore.Qt.gray))
         r = self.boundingRect();
         #print(r)
         #painter.drawRect(QRect(10,10,10,10))
         #painter.drawRect(QRect(r.x(), r.y(), r.width(), r.height()))
+        painter.setPen(QtGui.QPen(QtCore.Qt.black, 1))
         if self.hide:
             painter.setOpacity(1)
-            painter.drawRect(QRect(r.x(), r.y(), r.width(), r.height()))
+            painter.drawPixmap(
+               QRect(r.x(), r.y(), r.width(), r.height()),
+                img_png,
+            )
+            painter.drawText(
+                QRect(r.x(), r.y()+r.height() / 3, r.width(), r.height()),
+                Qt.AlignCenter,
+                self.label,
+            )
+            
+
         else:
             painter.setOpacity(0.5)
-            painter.drawRect(QRect(r.x(), r.y(), r.width(), r.height()))
+            painter.drawPixmap(
+               QRect(r.x(), r.y(), r.width(), r.height()),
+                img_png,
+            )
+            painter.drawText(
+                QRect(r.x(), r.y() + r.height() / 3 , r.width(), r.height()),
+                Qt.AlignCenter,
+                self.label,
+            )
+
 
 
 
@@ -120,7 +143,7 @@ class LnetdGroup(QGraphicsItemGroup):
     def contextMenuEvent(self, event):
         self.cmenu = QMenu()
         un_group = self.cmenu.addAction("Un-Group")
-        topology = self.cmenu.addAction("Show Topology")
+        #topology = self.cmenu.addAction("Show Topology")
         if self.hide:
             un_hide = self.cmenu.addAction("Un-Hide")
             un_hide.setText('Un-hide Nodes')
@@ -141,12 +164,18 @@ class LnetdGroup(QGraphicsItemGroup):
                 self.removeFromGroup(item)
                 self.scene.removeItem(item)
                 self.scene.addItem(item)
+                previousNode = self.node_list.get(item.node.label)
+                if previousNode and self.keepPosition:
+                    item.setPos(previousNode['posX'],previousNode['posY'])
                 item.show()
                 item.prepareGeometryChange()
             self.scene.destroyItemGroup(self)
+        '''
+        #disabled for now , see comment in main program. 
         elif action.text() == 'Show Topology':
             self.scene.handleGroupActionTopology(
                  self, "message from group topology")
+        '''
         self.scene.update()
         # dont propagate event
         super(LnetdGroup, self).contextMenuEvent(event)

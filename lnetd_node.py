@@ -57,13 +57,18 @@ from PyQt5.QtWidgets import (
 from lnetd_link import Link
 
 
-class Rectangle(QtWidgets.QGraphicsItem):
+class Rectangle(QtWidgets.QGraphicsEllipseItem):
     def __init__(self, node):
         super(Rectangle, self).__init__(parent=None)
         self.icons = False
         self.node = node
         self.node_position = self.node.get_position()
         self.node_radius = Vector(self.node.get_radius() + 8).repeat(2)
+
+        x1 = self.node_position[0]
+        y1 = self.node_position[1]
+        self.setPos(x1,y1)
+        self.setRect(-self.node.radius/2,-self.node.radius/2,self.node.radius,self.node.radius)
 
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable)
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
@@ -85,12 +90,13 @@ class Rectangle(QtWidgets.QGraphicsItem):
         """this is the selection area and colision detection"""
         path = QtGui.QPainterPath()
         path.addRect(
-            QRectF(*(self.node_position - self.node_radius), *(2 * self.node_radius))
+            self.rect()
         )
         return path
 
     def boundingRect(self):
-        return QRectF(*(self.node_position - self.node_radius), *(2 * self.node_radius))
+        #return QRectF(*(self.node_position - self.node_radius), *(2 * self.node_radius))
+        return self.rect()
 
     def paint(self, painter, option, widget=None):
         # super(Rectangle, self).paint(painter, option, widget)
@@ -136,31 +142,21 @@ class Rectangle(QtWidgets.QGraphicsItem):
         if self.icons:
             #
             # FIX ME allow images instead via config option, find proper icons for router , router_selected , router_down
-            painter.setFont(QFont(self.font_family, self.font_size / 2))
+            painter.setFont(QFont(self.font_family, self.font_size / 3.2))
             painter.drawPixmap(
-                QRect(
-                    *(self.node_position - self.node_radius), *(2 * self.node_radius)
-                ),
+               QRect(-self.node.radius/2,-self.node.radius/2,self.node.radius,self.node.radius),
                 img_png,
             )
             painter.drawText(
-                QRectF(
-                    *(self.node_position - self.node_radius + (-5, 35)),
-                    *(2 * self.node_radius + (10, 0))
-                ),
+                QRect(-self.node.radius/2,self.node.radius/4,self.node.radius,self.node.radius),
                 Qt.AlignCenter,
                 self.node.label,
             )
         else:
-            painter.setFont(QFont(self.font_family, self.font_size / 2.2))
-            painter.drawEllipse(QPointF(*self.node_position), *self.node_radius)
-            painter.drawText(
-                QRectF(
-                    *(self.node_position - self.node_radius), *(2 * (self.node_radius))
-                ),
-                Qt.AlignCenter,
-                self.node.label,
-            )
+            painter.setFont(QFont(self.font_family, self.font_size / 3.2))
+            #painter.drawEllipse(QPointF(*self.node_position), *self.node_radius)
+            painter.drawEllipse(self.rect())
+            painter.drawText(self.rect(),Qt.AlignCenter,self.node.label)
 
         painter.restore()
 
